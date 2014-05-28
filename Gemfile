@@ -43,3 +43,8 @@ gem 'pry-rails'
 gem 'slim-rails'
 gem 'js-routes'
 gem 'foundation-rails'
+gem 'httpi'
+gem 'curb'
+group :development do
+  gem 'annotate'
+end
