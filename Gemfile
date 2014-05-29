@@ -46,5 +46,6 @@ gem 'foundation-rails'
 gem 'httpi'
 gem 'curb'
 group :development do
+  gem 'autoprefixer-rails'
   gem 'annotate'
 end

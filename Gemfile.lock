@@ -31,6 +31,8 @@ GEM
       activerecord (>= 2.3.0)
       rake (>= 0.8.7)
     arel (5.0.1.20140414130214)
+    autoprefixer-rails (1.1.20140410)
+      execjs
     builder (3.2.2)
     coderay (1.1.0)
     coffee-rails (4.0.1)
@@ -147,6 +149,7 @@ PLATFORMS
 
 DEPENDENCIES
   annotate
+  autoprefixer-rails
   coffee-rails (~> 4.0.0)
   curb
   foundation-rails
