@@ -60,8 +60,10 @@ class Change < ActiveRecord::Base
         }
       end
     )
-    if options[:update] || change.revisions.empty?
-      change.fetch_revisions gerrit
+
+    update = options[:update]
+    if update || change.revisions.empty?
+      change.fetch_revisions gerrit, update.to_i >= 2
       change.fetch_comments gerrit
     end
 
@@ -70,12 +72,12 @@ class Change < ActiveRecord::Base
     nil
   end
 
-  def fetch_revisions(gerrit)
+  def fetch_revisions(gerrit, force_update = false)
     raise ArgumentError, 'base_url doesn\'t match' if gerrit.base_url != host.base_url
     revision_id = 1
 
     loop do
-      revision = revisions.fetch(gerrit, number, revision_id, true) # true: force update
+      revision = revisions.fetch(gerrit, number, revision_id, force_update)
       break unless revision
       revision_id += 1
     end
@@ -86,15 +88,17 @@ class Change < ActiveRecord::Base
 
     detail = gerrit.get "/changes/#{number}/detail"
 
-    detail['messages'].map do |message|
-      next unless message['id']
-      comments.where(:local_id => message['id']).first_or_create!(
-        author_id: host.users.from_json(message['author']).id,
-        created_at: DateTime.parse(message['date']),
-        local_id: message['id'],
-        message: message['message'],
-        revision_number: message['_revision_number'],
-      )
+    ChangeComment.transaction do
+      detail['messages'].map do |message|
+        next unless message['id']
+        comments.where(:local_id => message['id']).first_or_create!(
+          author_id: host.users.from_json(message['author']).id,
+          created_at: DateTime.parse(message['date']),
+          local_id: message['id'],
+          message: message['message'],
+          revision_number: message['_revision_number'],
+        )
+      end
     end
   end
 

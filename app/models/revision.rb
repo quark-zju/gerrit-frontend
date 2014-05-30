@@ -40,8 +40,10 @@ class Revision < ActiveRecord::Base
     )
 
     if revision.files.empty? || update
-      revision.fetch_files(gerrit)
-      revision.fetch_comments(gerrit)
+      Revision.transaction do
+        revision.fetch_files(gerrit)
+        revision.fetch_comments(gerrit)
+      end
     end
 
     revision
