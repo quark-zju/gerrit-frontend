@@ -2,6 +2,7 @@
 
 cx = React.addons.classSet
 pullr = @pullr
+pullw = @pullw
 
 @BOT_NAME_KEYWORDS = ['CI', 'Jenkins', 'jenkins', 'Neutron Ryu', 'Testing', 'OpenContrall', 'Recheck', 'LaunchpadSync']
 
@@ -50,6 +51,22 @@ RevisionDiff = React.createClass
       props.pathnames.map (x) ->
         FileDiff key: x, pathname: x, a: pullr(props.revisionA.files, x, props.revisionASide), b: pullr(props.revisionB.files, x, props.revisionBSide)
 
+InlineComments = React.createClass
+  displayName: 'InlineComments'
+
+  render: ->
+    props = @props
+
+    div className: 'inlineCommentList',
+      _(props.inlineComments).map (fileComments, pathname) =>
+        div key: pathname,
+          span className: 'inlineCommentFileName', pathname
+          _(fileComments).map (comments, lineNo) =>
+            comments.map (comment) =>
+              span className: 'inlineComment',
+                span className: 'lineNo', lineNo
+                span className: 'inlineMessage', comment.message
+
 Comment = React.createClass
   displayName: 'Comment'
 
@@ -70,18 +87,40 @@ Comment = React.createClass
       div className: 'meta',
         Username className: 'author', user: props.author
         Timestamp className: 'date', time: props.date
-      pre className: 'message', props.message
+      pre className: 'message',
+        props.message
+        props.inlineComments && InlineComments inlineComments: props.inlineComments
       div className: 'commentEnd'
 
 CommentList = React.createClass
   displayName: 'CommentList'
 
   render: ->
-    # TODO merge inline comments and change comments
     props = @props
+    comments = props.comments
+
+    # merge inline comments into normal comments (by author, date)
+    commentAuthorDateToId = {}
+    commentIdToInlineComments = {}
+    getCommentAuthorDate = (comment) -> "#{comment.author.accountId}.#{Date.parse(comment.date)}"
+
+    for comment in comments
+      authorDate = getCommentAuthorDate(comment)
+      id = comment.id
+      commentAuthorDateToId[authorDate] = id
+    for revision in props.revisions
+      continue unless revision && revision.files
+      for pathname, file of revision.files
+        continue unless file && file.comments
+        for inlineComment in file.comments
+          authorDate = getCommentAuthorDate(inlineComment)
+          commentId = commentAuthorDateToId[authorDate]
+          fileComments = pullw commentIdToInlineComments, commentId, pathname
+          (fileComments[inlineComment.line] ||= []).push(inlineComment)
+
     div className: 'commentList',
-      _.sortBy(props.comments, ((x) -> x.date)).map (comment) ->
-        Comment $.extend(key: comment.id, comment)
+      _.sortBy(comments, ((x) -> x.date)).map (comment) ->
+        Comment $.extend(key: comment.id, inlineComments: commentIdToInlineComments[comment.id], comment)
 
 @ChangeView = React.createClass
   displayName: 'ChangeView'
@@ -110,7 +149,7 @@ CommentList = React.createClass
     div className: 'changeView',
       RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
       h2 className: 'sectionTitle', 'Comments'
-      CommentList comments: props.comments
+      CommentList comments: props.comments, revisions: props.revisions
       p className: 'changeId', @props.changeId
       p className: 'number', @props.number
       h2 className: 'sectionTitle', 'File Diffs'

@@ -24,9 +24,10 @@ class User < ActiveRecord::Base
 
   def as_json
     {
+      accountId: account_id,
+      email: email,
       name: name,
       username: username,
-      email: email,
     }
   end
 end

@@ -100,3 +100,24 @@
     }
   }
 }
+
+.inlineCommentList {
+  .inlineCommentFileName {
+    display: block;
+    font-weight: bold;
+    padding-top: 10px;
+  }
+
+  .inlineComment {
+    display: block;
+  }
+
+  .lineNo {
+    padding-left: 20px;
+    width: 50px;
+    display: inline-block;
+    color: grey;
+  }
+}
+
+
