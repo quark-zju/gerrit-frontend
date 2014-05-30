@@ -1,0 +1,61 @@
+@import 'colors';
+
+.diffView {
+  border: 1px solid #eee;
+  width: 100%;
+
+  .moreButton {
+    cursor: pointer;
+    display: block;
+    font-size: 12px;
+    height: 20px;
+    text-align: center;
+    user-select: none;
+    width: 100%;
+    padding: 5px 0;
+    background-color: #EEE;
+    color: grey;
+  }
+}
+
+.diffSegment {
+  .a, .b {
+    vertical-align: top;
+    width: 50%;
+  }
+
+  .lineWrapper {
+    display: block;
+    font-size: 0; /* get rid of mysterious whitespace caused by inline-block */
+  }
+
+  .code, .lineNo {
+    display: inline-block;
+    height: 12px;
+    overflow: hidden;
+    vertical-align: top;
+  }
+
+  .code {
+    font-family: "Menlo", "Consolas", "Monaco", monospace;
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .lineNo {
+    color: grey;
+    font-size: 10px;
+    max-width: 30px;
+    user-select: none;
+    width: 30px;
+  }
+
+  &.insert .b, &.change .b {
+    background-color: #DDFFDD;
+  }
+
+  &.delete .a, &.change .a {
+    background-color: #FFEEEE;
+  }
+}

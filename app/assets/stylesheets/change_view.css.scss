@@ -1,0 +1,45 @@
+@import 'colors';
+
+.revisionSelector {
+  background-color: white;
+  border: 10px solid white;
+  cursor: default;
+  opacity: 0.3;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: opacity .3s;
+
+  .revisionTag {
+    height: 20px;
+    text-align: center;
+    width: 30px;
+    &.sideA {
+      border-left: 1px solid #ddd;
+    }
+    &.sideB {
+      border-right: 1px solid #ddd;
+    }
+  }
+
+  .revisionLabel {
+    width: 25px;
+    font-weight: bold;
+  }
+
+  .selected {
+    background-color: $select-color;
+    color: white;
+  }
+
+  .revisionTag:not(.selected) {
+    cursor: pointer;
+    &:hover {
+      background-color: #eee;
+    }
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+}

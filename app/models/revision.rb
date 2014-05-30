@@ -70,8 +70,8 @@ class Revision < ActiveRecord::Base
       author: author,
       committer: committer,
       message: message,
-      parent_commit: parent_commit,
-      revision_id: local_id,
+      parentCommit: parent_commit,
+      revisionId: local_id,
       subject: subject,
     }
 

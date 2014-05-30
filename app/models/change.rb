@@ -20,9 +20,11 @@ class Change < ActiveRecord::Base
   belongs_to :owner, class_name: 'User'
   has_many :revisions
 
+  class ChangeNotFound < RuntimeError; end
+
   def self.fetch(gerrit, options)
     case options
-    when Integer
+    when Integer, /\A[0-9]+\z/
       options = {number: options}
     when String
       options = {change_id: options}
@@ -32,25 +34,33 @@ class Change < ActiveRecord::Base
       raise ArgumentError, 'options should have either :number or :change_id set'
     end
 
-    change = gerrit.get "changes/#{options[:number] || options[:change_id]}/detail"
-    return nil unless change['kind']
-
     # Build project/host/owner on demand
     host = Host.where(base_url: gerrit.base_url).first_or_create
-    project = host.projects.where(name: change['project']).first_or_create
-    owner = host.users.from_json(change['owner'])
 
-    where(options.merge(host_id: host.id, project_id: project.id)).first_or_create(
-      owner: owner,
-      subject: change['subject'],
-      branch: change['branch'],
-      change_id: change['change_id'],
-      number: change['_number'],
-      created_at: DateTime.parse(change['created']),
-      updated_at: DateTime.parse(change['updated']),
-    ).tap do |c|
-        c.update_revisions gerrit
+    clause = where(options.merge(host_id: host.id)).includes(:revisions => :revision_files)
+    change = clause.first || clause.create(
+      # not using first_or_create because it will calculate its params and won't work offline.
+      begin
+        change = gerrit.get "changes/#{options[:number] || options[:change_id]}/detail"
+        raise ChangeNotFound unless change['kind']
+
+        {
+          owner_id: host.users.from_json(change['owner']).id,
+          project_id: host.projects.where(name: change['project']).first_or_create.id,
+          subject: change['subject'],
+          branch: change['branch'],
+          change_id: change['change_id'],
+          number: change['_number'],
+          created_at: DateTime.parse(change['created']),
+          updated_at: DateTime.parse(change['updated']),
+        }
       end
+    )
+    change.update_revisions gerrit if options[:update] || change.revisions.empty?
+
+    change
+  rescue ChangeNotFound => ex
+    nil
   end
 
   def update_revisions(gerrit)
@@ -67,14 +77,14 @@ class Change < ActiveRecord::Base
   def as_json(deep = false)
     result = {
       branch: branch,
-      change_id: change_id,
-      created_at: created_at,
+      changeId: change_id,
+      createdAt: created_at,
       host: host.as_json,
       number: number,
       owner: owner.as_json,
       project: project.as_json,
       subject: subject,
-      updated_at: updated_at,
+      updatedAt: updated_at,
     }
 
     if deep

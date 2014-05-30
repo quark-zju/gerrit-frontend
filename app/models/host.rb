@@ -12,7 +12,7 @@ class Host < ActiveRecord::Base
 
   def as_json
     {
-      base_url: base_url
+      baseUrl: base_url
     }
   end
 end

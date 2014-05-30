@@ -1,0 +1,6 @@
+div#ChangeView
+script
+  | var changeViewProps = #{@change.as_json(true).to_json.html_safe}
+coffee:
+  $ ->
+    React.renderComponent(ChangeView(changeViewProps), document.getElementById('ChangeView'))
