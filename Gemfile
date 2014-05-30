@@ -45,6 +45,7 @@ gem 'js-routes'
 gem 'foundation-rails'
 gem 'httpi'
 gem 'curb'
+gem 'delayed_job_active_record'
 group :development do
   gem 'autoprefixer-rails'
   gem 'annotate'
