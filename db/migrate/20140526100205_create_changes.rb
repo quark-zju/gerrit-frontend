@@ -10,5 +10,7 @@ class CreateChanges < ActiveRecord::Migration
       t.references :owner
       t.timestamps
     end
+
+    add_index :changes, [:host_id, :number], unique: true
   end
 end

@@ -25,6 +25,7 @@ ActiveRecord::Schema.define(version: 20140527030223) do
     t.datetime "updated_at"
   end
 
+  add_index "changes", ["host_id", "number"], name: "index_changes_on_host_id_and_number", unique: true
   add_index "changes", ["host_id"], name: "index_changes_on_host_id"
   add_index "changes", ["project_id"], name: "index_changes_on_project_id"
 
