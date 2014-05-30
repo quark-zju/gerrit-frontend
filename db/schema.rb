@@ -11,7 +11,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140527030223) do
+ActiveRecord::Schema.define(version: 20140530031006) do
+
+  create_table "change_comments", force: true do |t|
+    t.integer  "author_id",       null: false
+    t.integer  "change_id",       null: false
+    t.string   "local_id",        null: false
+    t.integer  "revision_number"
+    t.text     "message"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "change_comments", ["author_id"], name: "index_change_comments_on_author_id"
+  add_index "change_comments", ["change_id"], name: "index_change_comments_on_change_id"
 
   create_table "changes", force: true do |t|
     t.integer  "host_id"

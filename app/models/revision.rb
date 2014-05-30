@@ -16,28 +16,38 @@ class Revision < ActiveRecord::Base
   belongs_to :change
   has_many :revision_files
 
+  alias :files :revision_files
+
+  class RevisionNotFound < RuntimeError; end
+
   def self.fetch(gerrit, change_id, revision_id)
-    # TODO: handle revision_id = 0
-    commit = gerrit.get "changes/#{change_id}/revisions/#{revision_id}/commit"
-    return nil unless commit['kind']
+    clause = where(local_id: revision_id)
+    revision = clause.first || clause.create!(
+      begin
+        commit = gerrit.get "changes/#{change_id}/revisions/#{revision_id}/commit"
+        raise RevisionNotFound unless commit['kind']
 
-    user_to_s = lambda do |user|
-      "#{user['name']} <#{user['email']}>"
-    end
+        user_to_s = lambda {|user| "#{user['name']} <#{user['email']}>"}
 
-    where(local_id: revision_id).first_or_create(
-      author: user_to_s[commit['author']],
-      committer: user_to_s[commit['committer']],
-      parent_commit: commit['parents'].map{|x|x['commit']}.join(' '),
-      subject: commit['subject'],
-      message: commit['message'],
-    ).tap do |r|
-        r.update_files(gerrit)
-        r.update_comments(gerrit)
+        {
+          author: user_to_s[commit['author']],
+          committer: user_to_s[commit['committer']],
+          parent_commit: commit['parents'].map{|x|x['commit']}.join(' '),
+          subject: commit['subject'],
+          message: commit['message'],
+        }
       end
+    )
+
+    revision.fetch_files(gerrit) if revision.files.empty?
+    revision.fetch_comments(gerrit) if revision.comments.empty?
+
+    revision
+  rescue RevisionNotFound => ex
+    nil
   end
 
-  def update_files(gerrit)
+  def fetch_files(gerrit)
     pathnames = gerrit.get("changes/#{change.number}/revisions/#{local_id}/files").keys
     pathnames.each do |pathname|
       diff = gerrit.get("changes/#{change.number}/revisions/#{local_id}/files/#{pathname.gsub('/', '%2F')}/diff")
@@ -49,20 +59,16 @@ class Revision < ActiveRecord::Base
           b += v if k.include?('b')
         end
       end
-      revision_files.where(pathname: pathname).first_or_create(
+      revision_files.where(pathname: pathname).first_or_create!(
         a: a.join("\n"),
         b: b.join("\n"),
       )
     end
   end
 
-  def update_comments(gerrit)
+  def fetch_comments(gerrit)
     comments = gerrit.get("changes/#{change.number}/revisions/#{local_id}/comments")
     # TODO
-  end
-
-  def files
-    revision_files
   end
 
   def as_json(deep = false)

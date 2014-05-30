@@ -19,6 +19,9 @@ class Change < ActiveRecord::Base
   belongs_to :project
   belongs_to :owner, class_name: 'User'
   has_many :revisions
+  has_many :change_comments
+
+  alias :comments :change_comments
 
   class ChangeNotFound < RuntimeError; end
 
@@ -38,7 +41,7 @@ class Change < ActiveRecord::Base
     host = Host.where(base_url: gerrit.base_url).first_or_create
 
     clause = where(options.merge(host_id: host.id)).includes(:revisions => :revision_files)
-    change = clause.first || clause.create(
+    change = clause.first || clause.create!(
       # not using first_or_create because it will calculate its params and won't work offline.
       begin
         change = gerrit.get "changes/#{options[:number] || options[:change_id]}/detail"
@@ -56,14 +59,17 @@ class Change < ActiveRecord::Base
         }
       end
     )
-    change.update_revisions gerrit if options[:update] || change.revisions.empty?
+    if options[:update] || change.revisions.empty?
+      change.fetch_revisions gerrit
+      change.fetch_comments gerrit
+    end
 
     change
   rescue ChangeNotFound => ex
     nil
   end
 
-  def update_revisions(gerrit)
+  def fetch_revisions(gerrit)
     raise ArgumentError, 'base_url doesn\'t match' if gerrit.base_url != host.base_url
     revision_id = 1
 
@@ -71,6 +77,23 @@ class Change < ActiveRecord::Base
       revision = revisions.fetch(gerrit, number, revision_id)
       break unless revision
       revision_id += 1
+    end
+  end
+
+  def fetch_comments(gerrit)
+    raise ArgumentError, 'base_url doesn\'t match' if gerrit.base_url != host.base_url
+
+    detail = gerrit.get "/changes/#{number}/detail"
+
+    detail['messages'].map do |message|
+      next unless message['id']
+      comments.where(:local_id => message['id']).first_or_create!(
+        author_id: host.users.from_json(message['author']).id,
+        created_at: DateTime.parse(message['date']),
+        local_id: message['id'],
+        message: message['message'],
+        revision_number: message['_revision_number'],
+      )
     end
   end
 
