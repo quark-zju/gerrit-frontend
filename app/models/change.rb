@@ -18,8 +18,8 @@ class Change < ActiveRecord::Base
   belongs_to :host
   belongs_to :project
   belongs_to :owner, class_name: 'User'
-  has_many :revisions
-  has_many :change_comments
+  has_many :revisions, :dependent => :destroy
+  has_many :change_comments, :dependent => :delete_all
 
   alias :comments :change_comments
 
@@ -74,8 +74,8 @@ class Change < ActiveRecord::Base
     )
 
     update = options[:update]
-    if (update || change.revisions.empty?) && change.status != STATUS_FETCHING
-      update_column :status, STATUS_FETCHING
+    if update || (change.revisions.empty? && change.status != STATUS_FETCHING)
+      change.update_column :status, STATUS_FETCHING
       change.delay.fetch_dependencies(
         gerrit,
         update.to_i >= 2, # force update revision

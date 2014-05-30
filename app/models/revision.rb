@@ -14,7 +14,7 @@
 
 class Revision < ActiveRecord::Base
   belongs_to :change
-  has_many :revision_files
+  has_many :revision_files, :dependent => :destroy
 
   alias :files :revision_files
 
@@ -63,10 +63,14 @@ class Revision < ActiveRecord::Base
           b += v if k.include?('b')
         end
       end
-      revision_files.where(pathname: pathname).first_or_create!(
-        a: a.join("\n"),
-        b: b.join("\n"),
-      )
+      clause = revision_files.where(pathname: pathname)
+      clause.first || begin
+        file = clause.build
+        file.a = a.join("\n")
+        file.b = b.join("\n")
+        file.save!
+        file
+      end
     end
   end
 
