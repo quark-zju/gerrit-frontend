@@ -1,4 +1,4 @@
-{div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, sup} = React.DOM
+{a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, sup} = React.DOM
 
 cx = React.addons.classSet
 pullr = @pullr
@@ -11,14 +11,14 @@ FileDiff = React.createClass
 
   render: ->
     props = @props
-    a = props.a
-    b = props.b
-    a += '\n' if a && a.length > 0 && a[a.length - 1] != '\n'
-    b += '\n' if b && b.length > 0 && b[b.length - 1] != '\n'
+    $a = props.a
+    $b = props.b
+    $a += '\n' if $a && $a.length > 0 && $a[$a.length - 1] != '\n'
+    $b += '\n' if $b && $b.length > 0 && $b[$b.length - 1] != '\n'
 
     div className: 'fileDiff',
       p className: 'pathname', props.pathname
-      DiffView {a, b}
+      DiffView {a: $a, b: $b}
 
 
 RevisionSelector = React.createClass
@@ -141,6 +141,28 @@ CommentList = React.createClass
       _.sortBy(comments, ((x) -> x.date)).map (comment) ->
         Comment $.extend(key: comment.id, inlineComments: commentIdToInlineComments[comment.id], comment)
 
+MetaData = React.createClass
+  displayName: 'MetaData'
+  render: ->
+    props = @props
+    trs = []
+    _(['subject', 'project', 'owner', 'updatedAt', 'changeId', 'branch']).eachSlice 2, (slice) ->
+      trs.push(
+        tr key: slice[0], className: 'fieldRow',
+          slice.map (field) ->
+            [
+              td key: "#{field}_n", className: 'fieldName', field
+              td key: "#{field}_v", className: 'fieldValue',
+                if field == 'owner'
+                  Username user: props[field]
+                else if field == 'changeId'
+                  a href: "#{props.host.baseUrl}/#/c/#{props.number}/", target: '_blank', props[field]
+                else
+                  props[field]
+            ]
+      )
+    table className: 'metaDataTable', trs
+
 @ChangeView = React.createClass
   displayName: 'ChangeView'
 
@@ -167,9 +189,11 @@ CommentList = React.createClass
 
     div className: 'changeView',
       RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
+      if props.fetching
+        p className: 'fetchingTip', 'Note: Importing in progress. Current data may be not complete.'
+      h2 className: 'sectionTitle', 'Metadata'
+      MetaData @props
       h2 className: 'sectionTitle', 'Comments'
       CommentList comments: props.comments, revisions: props.revisions
-      p className: 'changeId', @props.changeId
-      p className: 'number', @props.number
       h2 className: 'sectionTitle', 'File Diffs'
       RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side}
