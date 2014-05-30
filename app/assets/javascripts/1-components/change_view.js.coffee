@@ -110,7 +110,7 @@ Comment = React.createClass
         tbody null,
           tr null,
             td className: 'meta',
-              Username className: 'author', user: props.author
+              Username className: cx(author: true, owner: props.author.accountId == props.owner.accountId), user: props.author
               Timestamp className: 'date', time: props.date
             td className: 'message',
               TextSegment content: props.message,
@@ -128,10 +128,13 @@ CommentList = React.createClass
     commentIdToInlineComments = {}
     getCommentAuthorDate = (comment) -> "#{comment.author.accountId}.#{Date.parse(comment.date)}"
 
+    # step 1: index comment by author, date
     for comment in comments
       authorDate = getCommentAuthorDate(comment)
       id = comment.id
       commentAuthorDateToId[authorDate] = id
+
+    # step 2: process inline comments
     for revision in props.revisions
       continue unless revision && revision.files
       for pathname, file of revision.files
@@ -144,7 +147,7 @@ CommentList = React.createClass
 
     div className: 'commentList',
       _.sortBy(comments, ((x) -> x.date)).map (comment) ->
-        Comment $.extend(key: comment.id, inlineComments: commentIdToInlineComments[comment.id], comment)
+        Comment $.extend(key: comment.id, inlineComments: commentIdToInlineComments[comment.id], owner: props.owner, comment)
 
 MetaData = React.createClass
   displayName: 'MetaData'
@@ -202,6 +205,6 @@ MetaData = React.createClass
       h2 className: 'sectionTitle', 'Metadata'
       MetaData @props
       h2 className: 'sectionTitle', 'Comments'
-      CommentList comments: props.comments, revisions: props.revisions
+      CommentList comments: props.comments, revisions: props.revisions, owner: props.owner
       h2 className: 'sectionTitle', 'File Diffs'
       RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side}
