@@ -13,35 +13,33 @@
 
 class RevisionFile < ActiveRecord::Base
   belongs_to :revision
+  belongs_to :a_content, class_name: 'Content'
+  belongs_to :b_content, class_name: 'Content'
   has_many :revision_file_comments
 
   alias :comments :revision_file_comments
 
-  before_save :compress_data
-
   def as_json
     {
-      a: a_content,
-      b: b_content,
+      a: a,
+      b: b,
       comments: comments.as_json,
       name: pathname,
     }
   end
 
-  def a_content
-    a || ActiveSupport::Gzip.decompress(compressed_b)
-  end
+  %w[a b].each do |prefix|
+    define_method prefix do
+      send("#{prefix}_content_id") && send("#{prefix}_content").content
+    end
 
-  def b_content
-    b || ActiveSupport::Gzip.decompress(compressed_b)
-  end
-
-  def compress_data
-    %w[a b].each do |x|
-      if attributes[x] && !attributes["compressed_#{x}"]
-        self.send "compressed_#{x}=", ActiveSupport::Gzip.compress(self.send(x))
-        self.send "#{x}=", nil
+    define_method "#{prefix}=" do |content|
+      if content
+        send "#{prefix}_content_id=", Content.by_content(content)
+      else
+        send "#{prefix}_content_id=", nil
       end
     end
   end
+
 end

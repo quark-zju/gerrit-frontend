@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140530091914) do
+ActiveRecord::Schema.define(version: 20140530102007) do
 
   create_table "change_comments", force: true do |t|
     t.integer  "author_id",       null: false
@@ -42,6 +42,13 @@ ActiveRecord::Schema.define(version: 20140530091914) do
   add_index "changes", ["host_id", "number"], name: "index_changes_on_host_id_and_number", unique: true
   add_index "changes", ["host_id"], name: "index_changes_on_host_id"
   add_index "changes", ["project_id"], name: "index_changes_on_project_id"
+
+  create_table "contents", force: true do |t|
+    t.string "digest",             null: false
+    t.binary "compressed_content", null: false
+  end
+
+  add_index "contents", ["digest"], name: "index_contents_on_digest", unique: true
 
   create_table "delayed_jobs", force: true do |t|
     t.integer  "priority",   default: 0, null: false
@@ -86,10 +93,8 @@ ActiveRecord::Schema.define(version: 20140530091914) do
   create_table "revision_files", force: true do |t|
     t.integer "revision_id",  null: false
     t.string  "pathname",     null: false
-    t.text    "a"
-    t.text    "b"
-    t.binary  "compressed_a"
-    t.binary  "compressed_b"
+    t.integer "a_content_id"
+    t.integer "b_content_id"
   end
 
   add_index "revision_files", ["revision_id"], name: "index_revision_files_on_revision_id"
