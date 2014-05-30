@@ -46,11 +46,10 @@
 
 .commentList {
   clear: both;
-  padding: 20px;
   width: 100%;
 
   .comment {
-    border: 1px solid #eee;
+    border: 1px solid #ddd;
     clear: both;
     margin-top: -1px;
     padding: 10px;
@@ -58,7 +57,7 @@
     width: 100%;
 
     &:hover {
-      background-color: #fafafa;
+      background-color: #eee;
     }
 
     .meta {

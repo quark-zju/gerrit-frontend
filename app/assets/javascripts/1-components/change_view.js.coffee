@@ -1,4 +1,4 @@
-{div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre} = React.DOM
+{div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2} = React.DOM
 
 cx = React.addons.classSet
 pullr = @pullr
@@ -96,7 +96,9 @@ CommentList = React.createClass
 
     div className: 'changeView',
       RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
+      h2 className: 'sectionTitle', 'Comments'
       CommentList comments: props.comments
       p className: 'changeId', @props.changeId
       p className: 'number', @props.number
+      h2 className: 'sectionTitle', 'File Diffs'
       RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side}

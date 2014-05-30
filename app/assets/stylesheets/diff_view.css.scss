@@ -1,20 +1,24 @@
 @import 'colors';
 
 .diffView {
-  border: 1px solid #eee;
+  border: 1px solid #ddd;
   width: 100%;
 
   .moreButton {
     cursor: pointer;
     display: block;
     font-size: 12px;
-    height: 20px;
+    height: 24px;
     text-align: center;
     user-select: none;
     width: 100%;
     padding: 5px 0;
     background-color: #EEE;
     color: grey;
+
+    &:hover {
+      color: $select-color;
+    }
   }
 }
 
