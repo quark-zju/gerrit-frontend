@@ -20,7 +20,7 @@ class Revision < ActiveRecord::Base
 
   class RevisionNotFound < RuntimeError; end
 
-  def self.fetch(gerrit, change_id, revision_id)
+  def self.fetch(gerrit, change_id, revision_id, update = false)
     clause = where(local_id: revision_id)
     revision = clause.first || clause.create!(
       begin
@@ -39,8 +39,10 @@ class Revision < ActiveRecord::Base
       end
     )
 
-    revision.fetch_files(gerrit) if revision.files.empty?
-    revision.fetch_comments(gerrit) if revision.comments.empty?
+    if revision.files.empty? || update
+      revision.fetch_files(gerrit)
+      revision.fetch_comments(gerrit)
+    end
 
     revision
   rescue RevisionNotFound => ex

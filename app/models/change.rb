@@ -40,7 +40,8 @@ class Change < ActiveRecord::Base
     # Build project/host/owner on demand
     host = Host.where(base_url: gerrit.base_url).first_or_create!
 
-    clause = where(options.merge(host_id: host.id)).includes(:revisions => {:revision_files => :revision_file_comments})
+    condition = options.reject{|k| k == :update}.merge(host_id: host.id)
+    clause = where(condition).includes(:revisions => {:revision_files => :revision_file_comments})
     change = clause.first || clause.create!(
       # not using first_or_create because it will calculate its params and won't work offline.
       begin
@@ -74,7 +75,7 @@ class Change < ActiveRecord::Base
     revision_id = 1
 
     loop do
-      revision = revisions.fetch(gerrit, number, revision_id)
+      revision = revisions.fetch(gerrit, number, revision_id, true) # true: force update
       break unless revision
       revision_id += 1
     end

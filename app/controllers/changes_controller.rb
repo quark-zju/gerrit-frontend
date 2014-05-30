@@ -7,7 +7,16 @@ class ChangesController < ApplicationController
   before_filter :set_gerrit
 
   def show
-    @change = Change.includes(:revisions => :revision_files).fetch(@gerrit, params[:change_id])
+    options = {update: params[:update]}
+    change_id = params[:change_id]
+    case change_id
+    when Integer, /\A[0-9]+\z/
+      options.merge! number: change_id
+    when String
+      options.merge! change_id: change_id
+    end
+
+    @change = Change.includes(:revisions => :revision_files).fetch(@gerrit, options)
   end
 
   private
