@@ -112,6 +112,7 @@ class Change < ActiveRecord::Base
 
     if deep
       result[:revisions] = revisions.map{|r|r.as_json(true)}
+      result[:comments] = comments.map{|c|c.as_json}
     end
 
     result

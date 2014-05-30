@@ -7,3 +7,8 @@ body {
   font-family: Verdana, Tahoma, 'Dejavu Sans', sans;
   overflow-y: scroll;
 }
+
+pre, code, .code {
+  font-family: "Menlo", "Consolas", "Monaco", monospace;
+  font-size: inherit;
+}

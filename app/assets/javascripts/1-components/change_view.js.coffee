@@ -3,7 +3,7 @@
 cx = React.addons.classSet
 pullr = @pullr
 
-@FileDiff = FileDiff = React.createClass
+FileDiff = React.createClass
   displayName: 'FileDiff'
 
   render: ->
@@ -18,20 +18,7 @@ pullr = @pullr
       DiffView {a, b}
 
 
-@RevisionView = RevisionView = React.createClass
-  displayName: 'RevisionView'
-
-  render: ->
-    children = []
-    for path, file of @props.files
-      children.push(
-        div key: path,
-          p className: 'fileName', path
-          FileView file
-      )
-    div className: 'revisionView', children
-
-@RevisionSelector = RevisionSelector = React.createClass
+RevisionSelector = React.createClass
   displayName: 'RevisionSelector'
 
   render: ->
@@ -52,14 +39,36 @@ pullr = @pullr
                 try props["onRevision#{j}Click"](id: x, side: k)
               ), "#{x}#{k}"
 
-@RevisionDiff = RevisionDiff = React.createClass
-  displayName: 'revisionDiff'
+RevisionDiff = React.createClass
+  displayName: 'RevisionDiff'
 
   render: ->
     props = @props
     div className: 'fileSetDiff',
       props.pathnames.map (x) ->
         FileDiff key: x, pathname: x, a: pullr(props.revisionA.files, x, props.revisionASide), b: pullr(props.revisionB.files, x, props.revisionBSide)
+
+Comment = React.createClass
+  displayName: 'Comment'
+
+  render: ->
+    props = @props
+    div className: 'comment',
+      div className: 'meta',
+        Username className: 'author', user: props.author
+        Timestamp className: 'date', time: props.date
+      pre className: 'message', props.message
+      div className: 'commentEnd'
+
+CommentList = React.createClass
+  displayName: 'CommentList'
+
+  render: ->
+    # TODO merge inline comments and change comments
+    props = @props
+    div className: 'commentList',
+      _.sortBy(props.comments, ((x) -> x.date)).map (comment) ->
+        Comment $.extend(key: comment.id, comment)
 
 @ChangeView = React.createClass
   displayName: 'ChangeView'
@@ -84,11 +93,10 @@ pullr = @pullr
       _(revisionA.files).keys()
       _(revisionB.files).keys()
     )
+
     div className: 'changeView',
       RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
+      CommentList comments: props.comments
       p className: 'changeId', @props.changeId
       p className: 'number', @props.number
       RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side}
-      #@props.revisions.map (revision) ->
-      #  div key: revision.revision_id,
-      #    RevisionView revision

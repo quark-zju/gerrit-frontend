@@ -15,4 +15,14 @@
 class ChangeComment < ActiveRecord::Base
   belongs_to :author, class_name: 'User'
   belongs_to :change
+
+  def as_json
+    {
+      author: author.as_json,
+      date: created_at,
+      id: local_id,
+      message: message,
+      revisionNumber: revision_number,
+    }
+  end
 end

@@ -16,5 +16,6 @@
 //= require react_ujs
 //= require underscore
 //= require js_diff
+//= require moment
 //= require js-routes
 //= require_tree .

@@ -43,3 +43,48 @@
     opacity: 1;
   }
 }
+
+.commentList {
+  clear: both;
+  padding: 20px;
+  width: 100%;
+
+  .comment {
+    border: 1px solid #eee;
+    clear: both;
+    margin-top: -1px;
+    padding: 10px;
+    font-size: 12px;
+    width: 100%;
+
+    &:hover {
+      background-color: #fafafa;
+    }
+
+    .meta {
+      width: 100px;
+      float: left;
+
+      .author, .date {
+        display: block;
+      }
+
+      .author {
+        font-weight: bold;
+      }
+      .date {
+        font-size: 10px;
+        color: #777;
+      }
+    }
+
+    .message {
+      float: left;
+      display: block;
+    }
+
+    .commentEnd {
+      clear: both;
+    }
+  }
+}
