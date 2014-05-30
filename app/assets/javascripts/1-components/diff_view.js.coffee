@@ -14,7 +14,7 @@ Line = React.createClass
     props = @props
     span className: 'lineWrapper',
       span className: 'lineNo', props.lineNo
-      pre className: 'code', props.content
+      span className: 'code', props.content
 
 MoreButton = React.createClass
   displayName: 'MoreButton'

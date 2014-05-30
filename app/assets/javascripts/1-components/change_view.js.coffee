@@ -4,7 +4,7 @@ cx = React.addons.classSet
 pullr = @pullr
 pullw = @pullw
 
-@BOT_NAME_KEYWORDS = ['CI', 'Jenkins', 'jenkins', 'Neutron Ryu', 'Testing', 'OpenContrall', 'Recheck', 'LaunchpadSync']
+@BOT_NAME_KEYWORDS = ['CI', 'Jenkins', 'jenkins', 'Neutron Ryu', 'Testing', 'OpenContrall', 'Recheck', 'LaunchpadSync', 'VMware']
 
 FileDiff = React.createClass
   displayName: 'FileDiff'
@@ -27,27 +27,27 @@ RevisionSelector = React.createClass
   render: ->
     props = @props
     trs = []
-    ['A', 'B'].map (j) ->
-      _.eachSlice props.revisionIds, 12, (revisionIdSlice, k) ->
+    ['A', 'B'].map (selectorSide) ->
+      _.eachSlice props.revisionIds, 12, (revisionIdSlice, index) ->
         trs.push(
-          tr className: "revision#{j}Selector", key: "#{j}#{k}",
-            if k == 0
-              td className: 'revisionLabel', j
+          tr className: "revision#{selectorSide}Selector", key: "#{selectorSide}#{index}",
+            if index == 0
+              td className: 'revisionLabel', selectorSide
             else
               td null
-            revisionIdSlice.map (x) ->
-              ['a', 'b'].map (k) ->
-                revision = props["revision#{j}"]
-                td key: k, className: cx(
+            revisionIdSlice.map (revisionId) ->
+              ['a', 'b'].map (revisionSide) ->
+                selectedRevision = props["revision#{selectorSide}"]
+                td key: "#{revisionId}_#{revisionSide}", className: cx(
                   revisionTag: true
-                  selected: x == revision.id && revision.side == k
-                  sideA: k == 'a'
-                  sideB: k == 'b'
+                  selected: revisionId == selectedRevision.id && selectedRevision.side == revisionSide
+                  sideA: revisionSide == 'a'
+                  sideB: revisionSide == 'b'
                 ), onClick: (->
-                  try props["onRevision#{j}Click"](id: x, side: k)
+                  try props["onRevision#{selectorSide}Click"](id: revisionId, side: revisionSide)
                 ),
-                  span null, x
-                  sup null, k
+                  span null, revisionId
+                  sup null, revisionSide
         )
     div className: 'revisionSelector',
       table className: 'summaryTable',
@@ -101,13 +101,15 @@ Comment = React.createClass
   render: ->
     props = @props
     div className: cx(comment: true, collapsed: @state.collapsed, bot: @isBot()), id: "comment-#{props.id}", onClick: @handleClick,
-      div className: 'meta',
-        Username className: 'author', user: props.author
-        Timestamp className: 'date', time: props.date
-      pre className: 'message',
-        props.message
-        props.inlineComments && InlineComments inlineComments: props.inlineComments
-      div className: 'commentEnd'
+      table className: 'commentTable',
+        tbody null,
+          tr null,
+            td className: 'meta',
+              Username className: 'author', user: props.author
+              Timestamp className: 'date', time: props.date
+            td className: 'message',
+              TextSegment content: props.message,
+                props.inlineComments && InlineComments inlineComments: props.inlineComments
 
 CommentList = React.createClass
   displayName: 'CommentList'

@@ -74,8 +74,10 @@
     }
 
     .meta {
-      width: 100px;
-      float: left;
+      max-width: 120px;
+      min-width: 120px;
+      vertical-align: top;
+      width: 120px;
 
       .author, .date {
         display: block;
@@ -91,8 +93,7 @@
     }
 
     .message {
-      float: left;
-      display: block;
+      vertical-align: top;
     }
 
     .commentEnd {
@@ -107,9 +108,10 @@
     }
 
     &.collapsed {
-      padding: 1px 10px;
+      cursor: pointer;
       max-height: 19px;
       overflow-y: hidden;
+      padding: 1px 10px;
     }
   }
 }

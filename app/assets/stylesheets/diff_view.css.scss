@@ -31,6 +31,7 @@
   .lineWrapper {
     display: block;
     font-size: 0; /* get rid of mysterious whitespace caused by inline-block */
+    overflow: hidden;
   }
 
   .code, .lineNo {
@@ -38,6 +39,8 @@
     height: 12px;
     overflow: hidden;
     vertical-align: top;
+    word-break: break-all;
+    word-wrap: break-word;
   }
 
   .code {
@@ -49,9 +52,11 @@
   .lineNo {
     color: grey;
     font-size: 10px;
-    max-width: 30px;
+    max-width: 40px;
+    padding-right: 10px;
+    text-align: right;
     user-select: none;
-    width: 30px;
+    width: 40px;
   }
 
   &.insert .b, &.change .b {
