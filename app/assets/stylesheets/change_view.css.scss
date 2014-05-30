@@ -2,13 +2,11 @@
 
 .revisionSelector {
   background-color: white;
-  border: 10px solid white;
+  padding: 10px;
   cursor: default;
-  opacity: 0.3;
   position: fixed;
   right: 0;
   top: 0;
-  transition: opacity .3s;
 
   .revisionTag {
     height: 20px;
@@ -39,8 +37,23 @@
     }
   }
 
+  .summaryTable {
+    display: table;
+    .revisionTag:nth-child(1) {
+      border-right: 10px solid white;
+    }
+  }
+  .selectorTable {
+    display: none;
+  }
+
   &:hover {
-    opacity: 1;
+    .summaryTable {
+      display: none;
+    }
+    .selectorTable {
+      display: table;
+    }
   }
 }
 

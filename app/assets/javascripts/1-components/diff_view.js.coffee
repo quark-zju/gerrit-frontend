@@ -74,7 +74,7 @@ MoreButton = React.createClass
       linesExpanded = (@state.segmentExpanded[segment.id] || 0)
       linesBefore = LINES_BEFORE + linesExpanded
       linesAfter = LINES_AFTER + linesExpanded
-      hide = lines.length > linesBefore + linesAfter && segment.class == 'equal'
+      hide = lines.length > linesBefore + linesAfter && segment.class != 'insert'
       moreButtonDrawn = false
       lines.map (s, j) ->
         currentLineNo = (lineNo[side] += 1)
@@ -88,7 +88,7 @@ MoreButton = React.createClass
         else
           Line key: j, lineNo: currentLineNo, content: s
 
-    if segments.length == 1 && segments[0].class == 'equal' && !@state.wholeDiffExpanded
+    if segments.length == 1 && segments[0].class != 'insert' && !@state.wholeDiffExpanded
       div className: 'diffView',
         MoreButton className: 'wholeDiffExpandButton', onClick: ((e) =>
           @setState wholeDiffExpanded: true, segmentExpanded: {0: if e.shiftKey then Infinity else 0}

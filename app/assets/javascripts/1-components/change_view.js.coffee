@@ -1,4 +1,4 @@
-{div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2} = React.DOM
+{div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, sup} = React.DOM
 
 cx = React.addons.classSet
 pullr = @pullr
@@ -26,21 +26,38 @@ RevisionSelector = React.createClass
 
   render: ->
     props = @props
-    table className: 'revisionSelector',
-      ['A', 'B'].map (j) ->
-        tr className: "revision#{j}Selector", key: j,
-          td className: 'revisionLabel', j
-          props.revisionIds.map (x) ->
-            ['a', 'b'].map (k) ->
-              revision = props["revision#{j}"]
-              td key: k, className: cx(
-                revisionTag: true
-                selected: x == revision.id && revision.side == k
-                sideA: k == 'a'
-                sideB: k == 'b'
-              ), onClick: (->
-                try props["onRevision#{j}Click"](id: x, side: k)
-              ), "#{x}#{k}"
+    trs = []
+    ['A', 'B'].map (j) ->
+      _.eachSlice props.revisionIds, 12, (revisionIdSlice, k) ->
+        trs.push(
+          tr className: "revision#{j}Selector", key: "#{j}#{k}",
+            if k == 0
+              td className: 'revisionLabel', j
+            else
+              td null
+            revisionIdSlice.map (x) ->
+              ['a', 'b'].map (k) ->
+                revision = props["revision#{j}"]
+                td key: k, className: cx(
+                  revisionTag: true
+                  selected: x == revision.id && revision.side == k
+                  sideA: k == 'a'
+                  sideB: k == 'b'
+                ), onClick: (->
+                  try props["onRevision#{j}Click"](id: x, side: k)
+                ),
+                  span null, x
+                  sup null, k
+        )
+    div className: 'revisionSelector',
+      table className: 'summaryTable',
+        tbody null,
+          tr null,
+            ['A', 'B'].map (j) ->
+              td key: "#{j}_1", className: 'revisionTag selected', props["revision#{j}"]
+      table className: 'selectorTable',
+        tbody null,
+          trs
 
 RevisionDiff = React.createClass
   displayName: 'RevisionDiff'
