@@ -5,7 +5,7 @@ require 'base64'
 class Gerrit < Struct.new(:base_url, :username, :password)
 
   def get endpoint
-    puts "gerrit #{endpoint}"
+    puts "Gerrit get #{endpoint}" if Rails.env.development?
     req = HTTPI::Request.new File.join(base_url, username ? 'a' : '', endpoint)
     req.auth.digest username, password
     req.auth.ssl.verify_mode = :none
@@ -22,7 +22,7 @@ class Gerrit < Struct.new(:base_url, :username, :password)
         res.body
       end
     else
-      raise "Unknown content type: #{content_type}"
+      raise RuntimeError, "Unknown content type: #{content_type}"
     end
   end
 
