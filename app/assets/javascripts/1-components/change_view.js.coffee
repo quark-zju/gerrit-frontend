@@ -4,7 +4,7 @@ cx = React.addons.classSet
 pullr = @pullr
 pullw = @pullw
 
-@BOT_NAME_KEYWORDS = ['CI', 'Jenkins', 'jenkins', 'Neutron Ryu', 'Testing', 'OpenContrall', 'Recheck', 'LaunchpadSync', 'VMware']
+@BOT_NAME_KEYWORDS = ['CI', 'Jenkins', 'jenkins', 'Neutron Ryu', 'Testing', 'OpenContrall', 'Recheck', 'LaunchpadSync', 'VMware', 'OpenContrail']
 
 FileDiff = React.createClass
   displayName: 'FileDiff'
