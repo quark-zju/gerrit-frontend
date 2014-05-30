@@ -15,7 +15,7 @@ class User < ActiveRecord::Base
 
   def self.from_json(data)
     raise ArgumentError, 'data should have _account_id, email, name, username set' unless (data.keys & %w[_account_id email name username]).length == 4
-    where(account_id: data['_account_id']).first_or_create(
+    where(account_id: data['_account_id']).first_or_create!(
       email: data['email'],
       name: data['name'],
       username: data['username'],

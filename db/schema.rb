@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140530031006) do
+ActiveRecord::Schema.define(version: 20140530071155) do
 
   create_table "change_comments", force: true do |t|
     t.integer  "author_id",       null: false
@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(version: 20140530031006) do
     t.integer  "author_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "local_id"
   end
 
   add_index "revision_file_comments", ["author_id"], name: "index_revision_file_comments_on_author_id"

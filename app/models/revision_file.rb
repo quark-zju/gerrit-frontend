@@ -11,11 +11,15 @@
 
 class RevisionFile < ActiveRecord::Base
   belongs_to :revision
+  has_many :revision_file_comments
+
+  alias :comments :revision_file_comments
 
   def as_json
     {
       a: a,
       b: b,
+      comments: comments.as_json,
       name: pathname,
     }
   end

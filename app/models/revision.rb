@@ -67,8 +67,20 @@ class Revision < ActiveRecord::Base
   end
 
   def fetch_comments(gerrit)
-    comments = gerrit.get("changes/#{change.number}/revisions/#{local_id}/comments")
-    # TODO
+    files_path_map = Hash[files.map{|f| [f.pathname, f]}]
+    Hash[gerrit.get("changes/#{change.number}/revisions/#{local_id}/comments").map do |pathname, comments|
+      file = files_path_map[pathname]
+      raise RuntimeError, "Comment on a non-exist file: '#{pathname}'" unless file
+
+      [pathname, comments.map do |comment|
+        file.comments.where(:local_id => comment['id']).first_or_create!(
+          author_id: change.host.users.from_json(comment['author']).id,
+          line: comment['line'],
+          message: comment['message'],
+          created_at: DateTime.parse(comment['updated']),
+        )
+      end]
+    end]
   end
 
   def as_json(deep = false)

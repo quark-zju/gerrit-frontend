@@ -38,9 +38,9 @@ class Change < ActiveRecord::Base
     end
 
     # Build project/host/owner on demand
-    host = Host.where(base_url: gerrit.base_url).first_or_create
+    host = Host.where(base_url: gerrit.base_url).first_or_create!
 
-    clause = where(options.merge(host_id: host.id)).includes(:revisions => :revision_files)
+    clause = where(options.merge(host_id: host.id)).includes(:revisions => {:revision_files => :revision_file_comments})
     change = clause.first || clause.create!(
       # not using first_or_create because it will calculate its params and won't work offline.
       begin
@@ -49,7 +49,7 @@ class Change < ActiveRecord::Base
 
         {
           owner_id: host.users.from_json(change['owner']).id,
-          project_id: host.projects.where(name: change['project']).first_or_create.id,
+          project_id: host.projects.where(name: change['project']).first_or_create!.id,
           subject: change['subject'],
           branch: change['branch'],
           change_id: change['change_id'],
