@@ -46,6 +46,7 @@ gem 'foundation-rails'
 gem 'httpi'
 gem 'curb'
 gem 'delayed_job_active_record'
+gem 'daemons'
 group :development do
   gem 'autoprefixer-rails'
   gem 'annotate'
