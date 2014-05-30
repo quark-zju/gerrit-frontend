@@ -15,7 +15,7 @@ class RevisionFile < ActiveRecord::Base
   belongs_to :revision
   belongs_to :a_content, class_name: 'Content'
   belongs_to :b_content, class_name: 'Content'
-  has_many :revision_file_comments
+  has_many :revision_file_comments, :dependent => :delete_all
 
   alias :comments :revision_file_comments
 
@@ -43,7 +43,7 @@ class RevisionFile < ActiveRecord::Base
     define_method "#{prefix}=" do |content|
       instance_variable_set content_varialbe_name, content
       if content
-        send "#{prefix}_content_id=", Content.by_content(content)
+        send "#{prefix}_content_id=", Content.by_content(content).id
       else
         send "#{prefix}_content_id=", nil
       end
