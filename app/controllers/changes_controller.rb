@@ -24,6 +24,11 @@ class ChangesController < ApplicationController
     def set_gerrit
       gerrit_hostname = params[:hostname]
       password = passwords.find {|x| x['base_url'][/https?:\/\/([^\/]+)/i, 1] == gerrit_hostname}
+      if password.nil?
+        # If the host allows anonymous access, that's okay
+        host = Host.where('base_url LIKE ?', "%//#{gerrit_hostname}").first
+        password = {'base_url' => host.base_url} if host && host.allow_anonymous
+      end
       unless password
         @gerrit_hostname = gerrit_hostname
         render 'missing_password'

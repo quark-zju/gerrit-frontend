@@ -2,8 +2,9 @@
 #
 # Table name: hosts
 #
-#  id       :integer          not null, primary key
-#  base_url :string(255)      not null
+#  id              :integer          not null, primary key
+#  base_url        :string(255)      not null
+#  allow_anonymous :boolean          default(FALSE), not null
 #
 
 class Host < ActiveRecord::Base

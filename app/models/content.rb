@@ -1,3 +1,12 @@
+# == Schema Information
+#
+# Table name: contents
+#
+#  id                 :integer          not null, primary key
+#  digest             :string(255)      not null
+#  compressed_content :binary           not null
+#
+
 require 'digest/sha1'
 
 class Content < ActiveRecord::Base

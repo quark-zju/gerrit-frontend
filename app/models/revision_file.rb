@@ -5,10 +5,8 @@
 #  id           :integer          not null, primary key
 #  revision_id  :integer          not null
 #  pathname     :string(255)      not null
-#  a            :text
-#  b            :text
-#  compressed_a :binary
-#  compressed_b :binary
+#  a_content_id :integer
+#  b_content_id :integer
 #
 
 class RevisionFile < ActiveRecord::Base

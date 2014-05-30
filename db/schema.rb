@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140530102007) do
+ActiveRecord::Schema.define(version: 20140530163722) do
 
   create_table "change_comments", force: true do |t|
     t.integer  "author_id",       null: false
@@ -67,7 +67,8 @@ ActiveRecord::Schema.define(version: 20140530102007) do
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
   create_table "hosts", force: true do |t|
-    t.string "base_url", null: false
+    t.string  "base_url",                        null: false
+    t.boolean "allow_anonymous", default: false, null: false
   end
 
   create_table "projects", force: true do |t|

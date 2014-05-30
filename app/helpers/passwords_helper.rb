@@ -5,21 +5,21 @@ module PasswordsHelper
   end
 
   def update_passwords new_passwords
-    current_passwords = cookies.signed[:passwords]
+    next_passwords = cookies.signed[:passwords]
     # remove deleted passwords
-    current_passwords.reject! do |x|
+    next_passwords.reject! do |x|
       new_passwords.none? {|y| y['base_url'] == x['base_url']}
     end
     # merge new passwords
     new_passwords.each do |x|
-      next unless x['password']
-      current_passwords.reject! {|y| y['base_url'] == x['base_url']}
-      current_passwords.push(
+      next if x['no_change']
+      next_passwords.reject! {|y| y['base_url'] == x['base_url']}
+      next_passwords.push(
         base_url: x['base_url'].gsub(/\/$/, ''),
         username: x['username'],
         password: x['password'],
       )
     end
-    cookies.permanent.signed[:passwords] = current_passwords
+    cookies.permanent.signed[:passwords] = next_passwords
   end
 end

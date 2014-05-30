@@ -12,6 +12,7 @@
 #  owner_id   :integer
 #  created_at :datetime
 #  updated_at :datetime
+#  status     :integer          default(0), not null
 #
 
 class Change < ActiveRecord::Base
@@ -89,6 +90,7 @@ class Change < ActiveRecord::Base
   end
 
   def fetch_dependencies(gerrit, force_update_revision = false, skip_status_check = false)
+    # logger.log ["fetch_dependencies", force_update_revision, skip_status_check]
     return if status == STATUS_FETCHING && !skip_status_check
     update_column :status, STATUS_FETCHING
     begin

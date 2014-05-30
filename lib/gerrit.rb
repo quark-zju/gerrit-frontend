@@ -7,7 +7,7 @@ class Gerrit < Struct.new(:base_url, :username, :password)
   def get endpoint
     puts "Gerrit get #{endpoint}" if Rails.env.development?
     req = HTTPI::Request.new File.join(base_url, username ? 'a' : '', endpoint)
-    req.auth.digest username, password
+    req.auth.digest username, password if username && password && !username.empty?
     req.auth.ssl.verify_mode = :none
     res = HTTPI.get req
     content_type = [*res.headers['Content-Type']].last.split(/[ ;]/).first

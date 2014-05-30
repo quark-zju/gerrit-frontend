@@ -9,7 +9,12 @@ cx = React.addons.classSet
     passwords: @props.initialPasswords
     busy: false
 
+  isBaseUrlIllegal: ->
+    url = @state.currentBaseUrl
+    !url || !url.match(/^https?:\/\/[^.]+\.[^.]+/i) || _.find(@state.passwords, (x) -> x.base_url == url)
+
   handleAddButtonClick: ->
+    return if @isBaseUrlIllegal()
     passwords = @state.passwords
     passwords.push(
       base_url: @state.currentBaseUrl
@@ -24,6 +29,7 @@ cx = React.addons.classSet
 
   handleSubmitClick: ->
     return if @state.busy
+    @handleAddButtonClick()
     @setState busy: true
     $.post(
       Routes.passwords_path(),
@@ -36,7 +42,7 @@ cx = React.addons.classSet
 
   render: ->
     state = @state
-    illegalBaseUrl = !state.currentBaseUrl || !state.currentBaseUrl.match(/^https?:\/\/[^.]+\.[^.]+/i) || _.find(state.passwords, (x) -> x.base_url == state.currentBaseUrl)
+    illegalBaseUrl = @isBaseUrlIllegal()
     div className: 'passwordList',
       table className: 'passwordTable',
         thead null,
