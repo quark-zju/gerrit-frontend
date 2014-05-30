@@ -3,6 +3,8 @@
 cx = React.addons.classSet
 pullr = @pullr
 
+@BOT_NAME_KEYWORDS = ['CI', 'Jenkins', 'jenkins', 'Neutron Ryu', 'Testing', 'OpenContrall', 'Recheck', 'LaunchpadSync']
+
 FileDiff = React.createClass
   displayName: 'FileDiff'
 
@@ -51,9 +53,20 @@ RevisionDiff = React.createClass
 Comment = React.createClass
   displayName: 'Comment'
 
+  getInitialState: ->
+    # hide bot's comments by default
+    collapsed: @isBot()
+
+  handleClick: ->
+    if @state.collapsed
+      @setState collapsed: !@state.collapsed
+
+  isBot: ->
+    _.find(BOT_NAME_KEYWORDS, (x) => @props.author.name.indexOf(x) >= 0) && true
+
   render: ->
     props = @props
-    div className: 'comment',
+    div className: cx(comment: true, collapsed: @state.collapsed, bot: @isBot()), id: "comment-#{props.id}", onClick: @handleClick,
       div className: 'meta',
         Username className: 'author', user: props.author
         Timestamp className: 'date', time: props.date

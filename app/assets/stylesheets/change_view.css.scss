@@ -85,5 +85,18 @@
     .commentEnd {
       clear: both;
     }
+
+    &.bot {
+      color: #aaa;
+      .date {
+        color: #bbb;
+      }
+    }
+
+    &.collapsed {
+      padding: 1px 10px;
+      max-height: 19px;
+      overflow-y: hidden;
+    }
   }
 }
