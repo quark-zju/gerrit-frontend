@@ -16,7 +16,7 @@ class ChangesController < ApplicationController
       options.merge! change_id: change_id
     end
 
-    @change = Change.includes(:revisions => :revision_files).fetch(@gerrit, options)
+    @change = Change.fetch(@gerrit, options)
   end
 
   private

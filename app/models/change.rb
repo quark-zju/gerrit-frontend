@@ -44,7 +44,16 @@ class Change < ActiveRecord::Base
     host = Host.where(base_url: gerrit.base_url).first_or_create!
 
     condition = options.reject{|k| k == :update}.merge(host_id: host.id)
-    clause = where(condition).includes(:revisions => {:revision_files => :revision_file_comments})
+    clause = where(condition).includes(
+      {
+        :change_comments => :author,
+      },
+      {
+        :revisions => {
+          :revision_files => [:a_content, :b_content, {:revision_file_comments => :author}],
+        },
+      },
+    )
     change = clause.first || clause.create!(
       # not using first_or_create because it will calculate its params and won't work offline.
       begin

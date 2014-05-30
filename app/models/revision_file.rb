@@ -30,10 +30,11 @@ class RevisionFile < ActiveRecord::Base
 
   %w[a b].each do |prefix|
     define_method prefix do
-      send("#{prefix}_content_id") && send("#{prefix}_content").content
+      @content ||= send("#{prefix}_content_id") && send("#{prefix}_content").content
     end
 
     define_method "#{prefix}=" do |content|
+      @content = content
       if content
         send "#{prefix}_content_id=", Content.by_content(content)
       else
