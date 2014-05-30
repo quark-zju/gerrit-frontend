@@ -1,4 +1,4 @@
-{a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, sup} = React.DOM
+{a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, sup, style} = React.DOM
 
 cx = React.addons.classSet
 pullr = @pullr
@@ -171,6 +171,8 @@ MetaData = React.createClass
 @ChangeView = React.createClass
   displayName: 'ChangeView'
 
+  mixins: [WindowSizeMixin]
+
   getInitialState: ->
     revisionId = _.max(@props.revisions.map((x) -> x.revisionId))
     revisionA: {id: revisionId, side: 'a'}
@@ -193,6 +195,7 @@ MetaData = React.createClass
     )
 
     div className: 'changeView',
+      style null, ".diffSegment .lineWrapper{max-width: #{Math.max(100, state.windowWidth / 2 - 28)}px}"
       RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
       if props.fetching
         p className: 'fetchingTip', 'Note: Importing in progress. Current data may be not complete.'

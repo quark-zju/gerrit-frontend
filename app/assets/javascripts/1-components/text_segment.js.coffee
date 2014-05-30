@@ -2,19 +2,28 @@
 
 renderTextSegments = (content, tokenOffset = 0) ->
   # Find the first thing to be repalced
-  token = ''
+  token = null
   tokenPosition = 1 / 0
-  # <br>s
-  position = content.indexOf '\n'
-  if position >= 0 && position < tokenPosition
-    tokenPosition = position
-    token = '\n'
-  if token == ''
-    [span key: 'lastTextSegment', content]
+
+  # <br>, space
+  ['\n'].forEach (currentToken) ->
+    position = content.indexOf currentToken
+    if position >= 0 && position < tokenPosition
+      tokenPosition = position
+      token = currentToken
+
+  if !token
+    result = [span key: 'lastTextSegment', content]
+  else if token == ' ' # space, seems not useful
+    result = [span key: "#{tokenOffset}s", ' ']
   else if token == '\n' # <br>
-    arr = [br key: "#{tokenOffset}a"]
-    arr.unshift(span(key: "#{tokenOffset}b", content.substr(0, tokenPosition))) if tokenPosition > 0
-    arr.concat(renderTextSegments(content.substr(tokenPosition + token.length), tokenOffset + token.length + tokenPosition))
+    result = [br key: "#{tokenOffset}a"]
+
+  if token
+    result.unshift(span(key: "#{tokenOffset}b", content.substr(0, tokenPosition))) if tokenPosition > 0
+    result = result.concat(renderTextSegments(content.substr(tokenPosition + token.length), tokenOffset + token.length + tokenPosition))
+
+  result
 
 @TextSegment = React.createClass
   displayName: 'TextSegment'
