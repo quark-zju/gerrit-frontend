@@ -14,7 +14,8 @@ Line = React.createClass
     props = @props
     span className: 'lineWrapper',
       span className: 'lineNo', props.lineNo
-      span className: 'code', props.content
+      pre className: 'code', props.content
+      props.children
 
 MoreButton = React.createClass
   displayName: 'MoreButton'
@@ -23,6 +24,14 @@ MoreButton = React.createClass
     @transferPropsTo span className: 'lineWrapper',
       span className: 'moreButton', title: 'Press [SHIFT] and click to show all', 'Show More'
 
+InlineComment = React.createClass
+  displayName: 'InlineComment'
+
+  render: ->
+    comment = @props.comment
+    @transferPropsTo div className: 'inlineComment',
+      Username user: comment.author
+      TextSegment className: 'message', content: comment.message
 
 @DiffView = React.createClass
   displayName: 'DiffView'
@@ -60,11 +69,18 @@ MoreButton = React.createClass
     # line number counters
     lineNo = {a: 0, b: 0}
 
-    # expand a segment
+    # helper function: expand a segment
     expandLine = (lineNo, count = LINES_EXPAND_ONCE) =>
       segmentExpanded = @state.segmentExpanded
       segmentExpanded[lineNo] = (segmentExpanded[lineNo] || 0) + count
       @setState {segmentExpanded}
+
+    # collect inline comments
+    inlineCommentBySideLine = {a: {}, b: {}}
+    props.bInlineComments && props.bInlineComments.forEach (comment) ->
+      return unless comment && comment.line
+      commentSet = (inlineCommentBySideLine.b[comment.line] ||= [])
+      commentSet.push(comment)
 
     # render segment into lines
     renderSegmentLines = (segment, side) =>
@@ -86,7 +102,10 @@ MoreButton = React.createClass
             moreButtonDrawn = true
             MoreButton key: j, onClick: ((e) -> expandLine segment.id, if e.shiftKey then Infinity else LINES_EXPAND_ONCE)
         else
-          Line key: j, lineNo: currentLineNo, content: s
+          Line key: j, lineNo: currentLineNo, content: s,
+            if (currentInlineComments = inlineCommentBySideLine[side][currentLineNo])
+              currentInlineComments.map (comment) ->
+                InlineComment key: comment.id, comment: comment
 
     if segments.length == 1 && segments[0].class != 'insert' && !@state.wholeDiffExpanded
       div className: 'diffView',

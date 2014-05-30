@@ -18,7 +18,7 @@ FileDiff = React.createClass
 
     div className: 'fileDiff',
       p className: 'pathname', props.pathname
-      DiffView {a: $a, b: $b}
+      DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments}
 
 
 RevisionSelector = React.createClass
@@ -66,7 +66,12 @@ RevisionDiff = React.createClass
     props = @props
     div className: 'fileSetDiff',
       props.pathnames.map (x) ->
-        FileDiff key: x, pathname: x, a: pullr(props.revisionA.files, x, props.revisionASide), b: pullr(props.revisionB.files, x, props.revisionBSide)
+        FileDiff
+          key: x
+          pathname: x
+          a: pullr(props.revisionA.files, x, props.revisionASide)
+          b: pullr(props.revisionB.files, x, props.revisionBSide)
+          bInlineComments: pullr(props.revisionB.files, x, 'comments')
 
 InlineComments = React.createClass
   displayName: 'InlineComments'
@@ -146,7 +151,7 @@ MetaData = React.createClass
   render: ->
     props = @props
     trs = []
-    _(['subject', 'project', 'owner', 'updatedAt', 'changeId', 'branch']).eachSlice 2, (slice) ->
+    _(['subject', 'changeId', 'owner', 'updatedAt', 'project', 'branch']).eachSlice 2, (slice) ->
       trs.push(
         tr key: slice[0], className: 'fieldRow',
           slice.map (field) ->

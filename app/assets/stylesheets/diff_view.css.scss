@@ -36,7 +36,6 @@
 
   .code, .lineNo {
     display: inline-block;
-    height: 12px;
     overflow: hidden;
     vertical-align: top;
     word-break: break-all;
@@ -47,6 +46,18 @@
     font-size: 12px;
     margin: 0;
     padding: 0;
+  }
+
+  .inlineComment {
+    background: white;
+    border: 1px solid #ddd;
+    font-size: 12px;
+    margin: 2px 40px;
+    padding: 4px;
+    .username {
+      font-weight: bold;
+      padding-right: 10px;
+    }
   }
 
   .lineNo {
