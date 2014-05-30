@@ -29,12 +29,19 @@ class RevisionFile < ActiveRecord::Base
   end
 
   %w[a b].each do |prefix|
+    content_varialbe_name = "@#{prefix}_content"
+
     define_method prefix do
-      @content ||= send("#{prefix}_content_id") && send("#{prefix}_content").content
+      content = instance_variable_get content_varialbe_name
+      if content.nil?
+        content = send("#{prefix}_content_id") && send("#{prefix}_content").content
+        instance_variable_set content_varialbe_name, content
+      end
+      content
     end
 
     define_method "#{prefix}=" do |content|
-      @content = content
+      instance_variable_set content_varialbe_name, content
       if content
         send "#{prefix}_content_id=", Content.by_content(content)
       else
