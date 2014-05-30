@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140530071155) do
+ActiveRecord::Schema.define(version: 20140530085631) do
 
   create_table "change_comments", force: true do |t|
     t.integer  "author_id",       null: false
@@ -67,10 +67,12 @@ ActiveRecord::Schema.define(version: 20140530071155) do
   add_index "revision_file_comments", ["revision_file_id"], name: "index_revision_file_comments_on_revision_file_id"
 
   create_table "revision_files", force: true do |t|
-    t.integer "revision_id", null: false
-    t.string  "pathname",    null: false
+    t.integer "revision_id",  null: false
+    t.string  "pathname",     null: false
     t.text    "a"
     t.text    "b"
+    t.binary  "compressed_a"
+    t.binary  "compressed_b"
   end
 
   add_index "revision_files", ["revision_id"], name: "index_revision_files_on_revision_id"
