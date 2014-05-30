@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140530091659) do
+ActiveRecord::Schema.define(version: 20140530091914) do
 
   create_table "change_comments", force: true do |t|
     t.integer  "author_id",       null: false
@@ -28,14 +28,15 @@ ActiveRecord::Schema.define(version: 20140530091659) do
 
   create_table "changes", force: true do |t|
     t.integer  "host_id"
-    t.string   "change_id",  null: false
-    t.string   "subject",    null: false
-    t.integer  "number",     null: false
+    t.string   "change_id",              null: false
+    t.string   "subject",                null: false
+    t.integer  "number",                 null: false
     t.integer  "project_id"
     t.string   "branch"
     t.integer  "owner_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "status",     default: 0, null: false
   end
 
   add_index "changes", ["host_id", "number"], name: "index_changes_on_host_id_and_number", unique: true

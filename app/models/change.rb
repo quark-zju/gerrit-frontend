@@ -25,6 +25,9 @@ class Change < ActiveRecord::Base
 
   class ChangeNotFound < RuntimeError; end
 
+  STATUS_FETCHING = 1
+  STATUS_IDLE = 0
+
   def self.fetch(gerrit, options)
     case options
     when Integer, /\A[0-9]+\z/
@@ -62,14 +65,30 @@ class Change < ActiveRecord::Base
     )
 
     update = options[:update]
-    if update || change.revisions.empty?
-      change.fetch_revisions gerrit, update.to_i >= 2
-      change.fetch_comments gerrit
+    if (update || change.revisions.empty?) && change.status != STATUS_FETCHING
+      update_column :status, STATUS_FETCHING
+      change.delay.fetch_dependencies(
+        gerrit,
+        update.to_i >= 2, # force update revision
+        true, # skip status check
+      )
     end
 
     change
   rescue ChangeNotFound => ex
     nil
+  end
+
+  def fetch_dependencies(gerrit, force_update_revision = false, skip_status_check = false)
+    return if status == STATUS_FETCHING && !skip_status_check
+    update_column :status, STATUS_FETCHING
+    begin
+      fetch_comments gerrit
+      fetch_revisions gerrit, force_update_revision
+      touch
+    ensure
+      update_column :status, STATUS_IDLE
+    end
   end
 
   def fetch_revisions(gerrit, force_update = false)
@@ -107,6 +126,7 @@ class Change < ActiveRecord::Base
       branch: branch,
       changeId: change_id,
       createdAt: created_at,
+      fetching: status == STATUS_FETCHING,
       host: host.as_json,
       number: number,
       owner: owner.as_json,
