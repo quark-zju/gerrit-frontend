@@ -192,14 +192,19 @@ MetaData = React.createClass
     state = @state
     revisionA = _.find(props.revisions, (x) -> x.revisionId == state.revisionA.id)
     revisionB = _.find(props.revisions, (x) -> x.revisionId == state.revisionB.id)
-    pathnames = _.union(
-      _(revisionA.files).keys()
-      _(revisionB.files).keys()
-    )
+    revisionAvailable = revisionA && revisionB
+    pathnames = if revisionAvailable
+      _.union(
+        _(revisionA.files).keys()
+        _(revisionB.files).keys()
+      )
+    else
+      []
 
     div className: 'changeView',
       style null, ".diffSegment .lineWrapper{max-width: #{Math.max(100, state.windowWidth / 2 - 28)}px}"
-      RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
+      if revisionAvailable
+        RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
       if props.fetching
         p className: 'fetchingTip', 'Note: Importing in progress. Current data may be not complete.'
       h2 className: 'sectionTitle', 'Metadata'
@@ -207,4 +212,5 @@ MetaData = React.createClass
       h2 className: 'sectionTitle', 'Comments'
       CommentList comments: props.comments, revisions: props.revisions, owner: props.owner
       h2 className: 'sectionTitle', 'File Diffs'
-      RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side}
+      if revisionAvailable
+        RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side}
