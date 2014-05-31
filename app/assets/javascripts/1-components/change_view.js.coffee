@@ -1,4 +1,4 @@
-{a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, sup, style} = React.DOM
+{a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, h3, sup, style} = React.DOM
 
 cx = React.addons.classSet
 pullr = @pullr
@@ -29,7 +29,7 @@ FileDiff = React.createClass
     $b += '\n' if $b && $b.length > 0 && $b[$b.length - 1] != '\n'
 
     div className: 'fileDiff',
-      p className: 'pathname', props.pathname
+      h3 className: 'pathname', id: props.pathname, props.pathname
       DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments}
 
 
@@ -94,7 +94,7 @@ InlineComments = React.createClass
     div className: 'inlineCommentList',
       _(props.inlineComments).map (fileComments, pathname) =>
         div key: pathname,
-          span className: 'inlineCommentFileName', pathname
+          a href: "##{pathname}", className: 'inlineCommentFileName', pathname
           _(fileComments).map (comments, lineNo) =>
             comments.map (comment) =>
               span className: 'inlineComment',

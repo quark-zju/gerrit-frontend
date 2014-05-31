@@ -124,6 +124,10 @@
     display: block;
     font-weight: bold;
     padding-top: 10px;
+    color: inherit;
+    &:visited {
+      color: inherit;
+    }
   }
 
   .inlineComment {
@@ -157,6 +161,17 @@
 
   .fieldValue {
     width: 50%;
+  }
+}
+
+.fileDiff {
+  .pathname {
+    display: block;
+    padding: 10px;
+    background-color: #eee;
+    margin: 0;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
   }
 }
 
