@@ -269,7 +269,7 @@ MetaData = React.createClass
     updateLocationHash newHash
 
   handleLocationHashChange: ->
-    newState = {}
+    newState = highlight: {}
     props = @props
     hash = location.hash.replace(/^#/, '')
     line = null
@@ -290,20 +290,16 @@ MetaData = React.createClass
               id: revisionId
               side: revisionSide
         when 'P' # pathname, one time
-          newState.highlight ||= {}
           newState.highlight.type = 'line'
+          newState.highlight.line ||= 0
           newState.highlight.pathname = value
         when 'L'
-          newState.highlight ||= {}
-          newState.highlight.type = 'line'
           newState.highlight.line = parseInt(value)
         when 'I'
-          newState.highlight ||= {}
           newState.highlight.type = 'inlineComment'
           newState.highlight.inlineCommentId = value
 
-    if !_(newState).isEmpty()
-      @setState newState
+    @setState newState
 
   render: ->
     props = @props
