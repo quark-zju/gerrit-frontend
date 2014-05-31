@@ -76,7 +76,7 @@ class Change < ActiveRecord::Base
     )
 
     update = options[:update]
-    if update || (change.revisions.empty? && change.status != STATUS_FETCHING)
+    if update || (change.revisions.empty? && change.status == STATUS_IDLE)
       change.update_column :status, STATUS_QUEUED
       force_update_revision = update.to_i >= 2
       fetch_params = [gerrit, force_update_revision]
@@ -135,8 +135,8 @@ class Change < ActiveRecord::Base
   end
 
   STATUS_NOTES = {
-    STATUS_FETCHING => 'Importing in progress. Current data is probably incomplete.',
-    STATUS_QUEUED => 'Scheduled for importing. Current data is probably incomplete.',
+    STATUS_FETCHING => 'Importing in progress. Current data is probably incomplete. Refresh at will.',
+    STATUS_QUEUED => 'Scheduled for background importing. Current data is probably incomplete. Come back later.',
   }
 
   def as_json(deep = false)
