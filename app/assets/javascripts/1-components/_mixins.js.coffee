@@ -1,7 +1,6 @@
 @WindowSizeMixin =
   # helper to include `editable`, `required` css classes
   handleWindowResize: ->
-    console.log 'resize'
     @setState windowWidth: window.innerWidth, windowHeight: window.innerHeight
 
   componentWillMount: ->
