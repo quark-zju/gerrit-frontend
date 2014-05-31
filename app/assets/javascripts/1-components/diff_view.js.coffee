@@ -131,7 +131,7 @@ InlineComment = React.createClass
         else
           Line key: j, lineNo: currentLineNo, content: s, highlight: side == 'b' && props.highlightLine == currentLineNo,
             if (currentInlineComments = inlineCommentBySideLine[side][currentLineNo])
-              currentInlineComments.map (comment) ->
+              _(currentInlineComments).sortBy((c) -> c.date).map (comment) ->
                 InlineComment key: comment.id, comment: comment, owner: props.owner
 
     if segments.length == 1 && segments[0].class == 'equal' && !@state.wholeDiffExpanded
