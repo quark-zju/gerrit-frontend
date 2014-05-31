@@ -112,11 +112,11 @@
     }
 
     &.bot {
-      margin-top: 0;
+      border-bottom-color: transparent;
       border-color: #f5f5f5;
       border-top-color: transparent;
-      border-bottom-color: transparent;
       color: #bbb;
+      margin-top: 0;
       .date {
         color: #ccc;
       }

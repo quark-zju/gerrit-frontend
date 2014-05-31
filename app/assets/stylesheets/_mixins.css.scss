@@ -1,10 +1,12 @@
+@import 'colors';
+
 @mixin flat-button($color, $background, $hover-background: darken($background, 20%), $active-background: darken($hover-background, 20%)) {
   background: transparent;
   border: none;
   color: $color;
   cursor: pointer;
   background-color: $background;
-  transition: background .3s, opacity .3s, transform .3s;
+  transition: background .3s, opacity .3s;
 
   &:hover {
     background-color: $hover-background;

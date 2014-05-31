@@ -12,4 +12,14 @@ class PagesController < ApplicationController
     end
   end
 
+  def root
+    @sample_links = []
+    Host.first(5).each do |host|
+      if host.allow_anonymous || host_in_passwords?(host.hostname)
+        change_number = Change.where(:host_id => host.id).first.try(:number) || 1
+        @sample_links << "/#{host.hostname}/#{change_number}"
+      end
+    end
+  end
+
 end

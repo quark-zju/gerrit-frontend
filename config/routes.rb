@@ -4,4 +4,5 @@ Rails.application.routes.draw do
   end
 
   get '/:hostname/:change_id', controller: 'changes', action: 'show', as: 'change', constraints: {hostname: /[a-zA-Z0-9]+\.[^\/]*/}
+  root controller: 'pages', action: 'root'
 end

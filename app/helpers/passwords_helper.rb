@@ -1,7 +1,11 @@
 module PasswordsHelper
 
   def passwords
-    @passwords ||= cookies.signed[:passwords] || []
+    read_passwords
+  end
+
+  def host_in_passwords?(hostname)
+    read_passwords.any? {|x| x['base_url'][/https?:\/\/([^\/]+)/i, 1].upcase == hostname.upcase}
   end
 
   def update_passwords new_passwords
@@ -22,4 +26,10 @@ module PasswordsHelper
     end
     cookies.permanent.signed[:passwords] = next_passwords
   end
+
+  private
+
+    def read_passwords
+      @passwords ||= cookies.signed[:passwords] || []
+    end
 end
