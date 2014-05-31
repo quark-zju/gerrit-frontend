@@ -13,6 +13,7 @@ pullw = @pullw
   'OpenContrail'
   'OpenContrall'
   'Recheck'
+  'SmokeStack'
   'Testing'
   'turbo-hipster'
   'VMware'
@@ -218,7 +219,7 @@ MetaData = React.createClass
       if revisionAvailable
         RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
       if props.notice
-        p className: 'changeNotice notes', "Note: #{props.notice}"
+        p className: 'changeNotice notes', props.notice
       h2 className: 'sectionTitle', 'Metadata'
       MetaData @props
       h2 className: 'sectionTitle', 'Comments'

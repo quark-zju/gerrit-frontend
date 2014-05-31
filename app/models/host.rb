@@ -12,6 +12,10 @@ class Host < ActiveRecord::Base
   has_many :projects
   has_many :users
 
+  def hostname
+    base_url[/https?:\/\/([^\/]+)/i, 1]
+  end
+
   def as_json
     {
       baseUrl: base_url

@@ -1,6 +1,12 @@
-div#ChangeView
-script
-  | var changeViewProps = #{@change.as_json(true).to_json.html_safe}
-coffee:
-  $ ->
-    React.renderComponent(ChangeView(changeViewProps), document.getElementById('ChangeView'))
+- if @change
+  - content_for :title, "#{@change.number} | #{@change.host.hostname}"
+  div#ChangeViewRoot
+  script
+    | var changeViewProps = #{@change.as_json(true).to_json.html_safe}
+  coffee:
+    $ ->
+      React.renderComponent(ChangeView(changeViewProps), document.getElementById('ChangeViewRoot'))
+      return
+- else
+  - content_for :title, 'Not Found'
+  .notes No such change

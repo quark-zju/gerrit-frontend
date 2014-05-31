@@ -135,8 +135,8 @@ class Change < ActiveRecord::Base
   end
 
   STATUS_NOTES = {
-    STATUS_FETCHING => 'Importing in progress. Current data is probably incomplete. Refresh at will.',
-    STATUS_QUEUED => 'Scheduled for background importing. Current data is probably incomplete. Come back later.',
+    STATUS_FETCHING => 'Import in progress. Refresh at will.',
+    STATUS_QUEUED => 'Scheduled for background import. Come back later.',
   }
 
   def as_json(deep = false)
