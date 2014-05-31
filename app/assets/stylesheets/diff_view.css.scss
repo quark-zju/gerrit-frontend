@@ -30,6 +30,7 @@
     display: block;
     font-size: 0; /* get rid of mysterious whitespace caused by inline-block */
     overflow: hidden;
+    position: relative;
     &.highlight {
       background-color: #ffd;
     }
@@ -39,6 +40,7 @@
     display: inline-block;
     overflow: hidden;
     vertical-align: top;
+    white-space: pre;
     word-break: break-all;
     word-wrap: break-word;
   }
@@ -46,6 +48,8 @@
   .code {
     font-size: 12px;
     margin: 0;
+    margin-left: 40px;
+    min-height: 14px;
     padding: 0;
   }
 
@@ -68,9 +72,13 @@
   .lineNo {
     color: grey;
     font-size: 10px;
+    left: 0;
+    margin-right: -40px;
     max-width: 40px;
     padding-right: 10px;
+    position: absolute;
     text-align: right;
+    top: 1px;
     user-select: none;
     width: 40px;
   }

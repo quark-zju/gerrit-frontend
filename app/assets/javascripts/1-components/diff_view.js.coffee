@@ -33,7 +33,7 @@ Line = React.createClass
     props = @props
     span className: cx(lineWrapper: true, highlight: props.highlight),
       span className: 'lineNo', props.lineNo
-      pre className: 'code', props.content
+      span className: 'code', props.content
       props.children
 
 MoreButton = React.createClass
