@@ -1,9 +1,13 @@
 {a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, h3, sup, style} = React.DOM
 
-Callbacks = @dpm.Callbacks.get()
 cx = React.addons.classSet
-pullr = @pullr
-pullw = @pullw
+{
+  getLocationHash
+  pullr
+  pullw
+  scrollTo
+  updateLocationHash
+} = @
 
 @BOT_NAME_KEYWORDS = [
   'CI'
@@ -23,28 +27,6 @@ pullw = @pullw
 LOCATION_HASH_SPLITTER = ';'
 LOCATION_HASH_KEY_VALUE_SPLITTER = ':'
 
-getLocationHash = ->
-  hash = location.hash.replace(/^#/, '')
-  hashMap = {}
-  for segment in hash.split(LOCATION_HASH_SPLITTER)
-    [k, v] = segment.split(LOCATION_HASH_KEY_VALUE_SPLITTER)
-    hashMap[k] = v
-  hashMap
-
-updateLocationHash = (newHashMap) ->
-  return hash unless !_(newHashMap).isEmpty()
-  hashMap = getLocationHash()
-  $.extend hashMap, newHashMap
-  newHash = []
-  for k, v of hashMap
-    if v && "#{v}".length > 0
-      newHash.push "#{k}#{LOCATION_HASH_KEY_VALUE_SPLITTER}#{v}"
-  newHash = newHash.join(LOCATION_HASH_SPLITTER)
-  oldHash = location.hash.replace(/^#/, '')
-  if oldHash != newHash
-    location.hash = newHash
-  newHash
-
 
 FileDiff = React.createClass
   displayName: 'FileDiff'
@@ -53,12 +35,10 @@ FileDiff = React.createClass
     highlightLine: null
 
   componentDidMount: ->
-    Callbacks.addCallback 'jumpToFileLine', this, 'handleJump'
-    return
+    Callbacks.add 'jumpToFileLine', @handleJump
 
   componentWillUnmount: ->
-    Callbacks.removeCallback 'jumpToFileLine', this, 'handleJump'
-    return
+    Callbacks.remove 'jumpToFileLine', @handleJump
 
   handleJump: (place) ->
     props = @props
@@ -67,17 +47,20 @@ FileDiff = React.createClass
         place.line
       else
         null
+
+    if highlightLine == 0 && @state.highlightLine != 0
+      # jump to file header
+      scrollTo @refs.header.getDOMNode()
+
     @setState {highlightLine}
 
   render: ->
     props = @props
     $a = props.a
     $b = props.b
-    $a += '\n' if $a && $a.length > 0 && $a[$a.length - 1] != '\n'
-    $b += '\n' if $b && $b.length > 0 && $b[$b.length - 1] != '\n'
 
     div className: 'fileDiff',
-      h3 className: 'pathname', id: props.pathname, props.pathname
+      h3 className: 'pathname', id: props.pathname, ref: 'header', props.pathname
       DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments, highlightLine: @state.highlightLine}
 
 RevisionTag = React.createClass
@@ -148,27 +131,41 @@ InlineCommentPathname = React.createClass
   displayName: 'InlineCommentPathname'
 
   handleClick: ->
-    Callbacks.fireCallback 'jumpTo', pathname: @props.pathname, revisionNumber: @props.revisionNumber, line: 1
+    props = @props
+    revisionNumber = props.revisionNumber
+    updateLocationHash P: props.pathname, L: 0, A: "#{revisionNumber}a", B: "#{revisionNumber}b"
 
   render: ->
     pathname = @props.pathname
-    span className: 'inlineCommentFileName', onClick: @handleClick, pathname
+    span className: 'inlineCommentPathname', onClick: @handleClick, pathname
+
+InlineComment = React.createClass
+  displayName: 'InlineComment'
+
+  handleClick: ->
+    props = @props
+    revisionNumber = props.revisionNumber
+    updateLocationHash P: props.pathname, L: props.lineNo, A: "#{revisionNumber}a", B: "#{revisionNumber}b"
+
+  render: ->
+    props = @props
+    span className: 'inlineComment',
+      span className: 'lineNo', onClick: @handleClick, props.lineNo
+      span className: 'inlineMessage', props.comment.message
 
 InlineCommentList = React.createClass
   displayName: 'InlineCommentList'
 
   render: ->
     props = @props
+    revisionNumber = props.revisionNumber
 
     div className: 'inlineCommentList',
       _(props.comments).map (fileComments, pathname) =>
         div key: pathname,
-          InlineCommentPathname pathname: pathname, revisionNumber: props.revisionNumber
-          _(fileComments).map (comments, lineNo) =>
-            comments.map (comment) =>
-              span className: 'inlineComment',
-                span className: 'lineNo', lineNo
-                span className: 'inlineMessage', comment.message
+          InlineCommentPathname {pathname, revisionNumber}
+          _(fileComments).map (comments, lineNo) ->
+            comments.map (comment) -> InlineComment {key: lineNo, revisionNumber, pathname, lineNo, comment}
 
 Comment = React.createClass
   displayName: 'Comment'
@@ -259,14 +256,20 @@ MetaData = React.createClass
 
   mixins: [WindowSizeMixin]
 
+  componentWillMount: ->
+    @handleLocationHashChange()
+    return
+
   componentDidMount: ->
     window.addEventListener 'hashchange', @handleLocationHashChange, false
-    Callbacks.addCallback 'jumpTo', this, 'handleJump'
     return
 
   componentWillUnmount: ->
     window.removeEventListener 'hashchange', @handleLocationHashChange
-    Callbacks.removeCallback 'jumpTo', this, 'handleJump'
+    return
+
+  componentDidUpdate: (prevProps, prevState) ->
+    @setLocationHash()
     return
 
   getInitialState: ->
@@ -290,7 +293,8 @@ MetaData = React.createClass
     newState = {}
     props = @props
     hash = location.hash.replace(/^#/, '')
-    jumpToFile = {}
+    line = null
+    pathname = null
 
     # do not proceed if hash is not changed
     return if hash == @lastLocationHash
@@ -306,25 +310,19 @@ MetaData = React.createClass
               id: revisionId
               side: revisionSide
         when 'P' # pathname, one time
-          1
+          pathname = value
+        when 'L'
+          line = parseInt(value)
 
     if !_(newState).isEmpty()
       @setState newState
 
-  handleJump: (place) ->
-    hashMap = {}
-    hashMap['L'] = line = place.line
-    hashMap['P'] = pathname = place.pathname
-    if place.revisionNumber
-      hashMap['A'] = "#{place.revisionNumber}a"
-      hashMap['B'] = "#{place.revisionNumber}b"
-    return if _(hashMap).isEmpty()
-    updateLocationHash hashMap
-    if line && pathname
-      # redraw all so that selected revision / file is displayed
+    # jump to file, line
+    if line? && pathname
+      # redraw all so that selected revision / file is available
       @forceUpdate()
-      # jump to selected line
-      Callbacks.fireCallback 'jumpToFileLine', {line, pathname}
+      # callback may be not ready, use setTimeout to defer the jump
+      setTimeout((-> Callbacks.fire 'jumpToFileLine', {line, pathname}), 1)
 
   setLocationHash: ->
     state = @state
@@ -350,8 +348,6 @@ MetaData = React.createClass
     else
       []
 
-    @setLocationHash()
-
     div className: 'changeView',
       style null, ".diffSegment .lineWrapper{max-width: #{Math.max(100, state.windowWidth / 2 - 28)}px}"
       if revisionAvailable
@@ -365,3 +361,4 @@ MetaData = React.createClass
       h2 className: 'sectionTitle', 'File Diffs'
       if revisionAvailable
         RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side}
+

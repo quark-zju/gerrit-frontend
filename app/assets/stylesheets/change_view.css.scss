@@ -122,13 +122,14 @@
 }
 
 .inlineCommentList {
-  .inlineCommentFileName {
+  .inlineCommentPathname {
     display: block;
     font-weight: bold;
     padding-top: 10px;
     color: inherit;
-    &:visited {
-      color: inherit;
+    cursor: pointer;
+    &:hover {
+      color: $select-color;
     }
   }
 
@@ -137,10 +138,14 @@
   }
 
   .lineNo {
+    color: grey;
+    cursor: pointer;
+    display: inline-block;
     padding-left: 20px;
     width: 50px;
-    display: inline-block;
-    color: grey;
+    &:hover {
+      color: $select-color;
+    }
   }
 }
 

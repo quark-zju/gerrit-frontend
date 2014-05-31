@@ -1,15 +1,34 @@
 {div, span, table, code, tbody, thead, tr, td, i, input, li, ul, p, pre, br} = React.DOM
 
-Callbacks = @dpm.Callbacks.get()
 cx = React.addons.classSet
-pullr = @pullr
+{
+  hashString
+  pullr
+  scrollTo
+} = @
 
 LINES_BEFORE = 5
 LINES_AFTER = 5
 LINES_EXPAND_ONCE = 20
 
+diffCache = {}
+
+diffLines = (a, b) ->
+  a ||= ''
+  b ||= ''
+  # make sure a, b ends with '\n'
+  a += '\n' if a && a.length > 0 && a[a.length - 1] != '\n'
+  b += '\n' if b && b.length > 0 && b[b.length - 1] != '\n'
+  # cache diff results
+  key = [hashString(a), a.length, hashString(b), b.length].join('_')
+  diffCache[key] ||= JsDiff.diffLines(a, b)
+
 Line = React.createClass
   displayName: 'Line'
+
+  componentWillReceiveProps: (nextProps) ->
+    if nextProps.highlight && !@props.highlight
+      scrollTo @getDOMNode()
 
   render: ->
     props = @props
@@ -48,13 +67,13 @@ InlineComment = React.createClass
 
   shouldComponentUpdate: (nextProps, nextState) ->
     props = @props
-    _.some ['a', 'b', 'highlightLine', 'bInlineComments'], (name) -> !_.isEqual(props[name], nextProps[name])
+    _.some ['a', 'b', 'highlightLine', 'bInlineComments'], (name) -> !_.isEqual(props[name], nextProps[name]) || !_.isEqual(@state, nextState)
 
   render: ->
     props = @props
 
     # calculate diff
-    diffs = JsDiff.diffLines(props.a || '', props.b || '')
+    diffs = diffLines props.a, props.b
 
     # covert diffs to side-by-side segments
     segments = []
