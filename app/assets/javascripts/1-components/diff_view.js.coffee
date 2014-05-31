@@ -22,7 +22,7 @@ MoreButton = React.createClass
 
   render: ->
     @transferPropsTo span className: 'lineWrapper',
-      span className: 'moreButton', title: 'Press [SHIFT] and click to show all', 'Show More'
+      span className: 'moreButton', title: 'Hold [SHIFT] and click to show all', 'Show More'
 
 InlineComment = React.createClass
   displayName: 'InlineComment'
@@ -107,7 +107,7 @@ InlineComment = React.createClass
               currentInlineComments.map (comment) ->
                 InlineComment key: comment.id, comment: comment
 
-    if segments.length == 1 && segments[0].class != 'insert' && !@state.wholeDiffExpanded
+    if segments.length == 1 && segments[0].class == 'equal' && !@state.wholeDiffExpanded
       div className: 'diffView',
         MoreButton className: 'wholeDiffExpandButton', onClick: ((e) =>
           @setState wholeDiffExpanded: true, segmentExpanded: {0: if e.shiftKey then Infinity else 0}

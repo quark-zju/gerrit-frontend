@@ -1,8 +1,7 @@
 @import 'colors';
 
 .revisionSelector {
-  background-color: white;
-  padding: 10px;
+  padding: 14px 20px;
   cursor: default;
   position: fixed;
   right: 0;
@@ -11,13 +10,8 @@
   .revisionTag {
     height: 20px;
     text-align: center;
+    user-select: none;
     width: 30px;
-    &.sideA {
-      border-left: 1px solid #ddd;
-    }
-    &.sideB {
-      border-right: 1px solid #ddd;
-    }
   }
 
   .revisionLabel {
@@ -38,16 +32,24 @@
   }
 
   .summaryTable {
+    background-color: transparent;
     display: table;
     .revisionTag:nth-child(1) {
-      border-right: 10px solid white;
+      border-right: 1px solid white;
     }
   }
   .selectorTable {
     display: none;
+    .sideA {
+      border-left: 1px solid #ddd;
+    }
+    .sideB {
+      border-right: 1px solid #ddd;
+    }
   }
 
   &:hover {
+    background-color: white;
     .summaryTable {
       display: none;
     }

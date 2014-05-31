@@ -33,6 +33,26 @@ FileDiff = React.createClass
       h3 className: 'pathname', id: props.pathname, props.pathname
       DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments}
 
+RevisionTag = React.createClass
+  displayName: 'RevisionTag'
+
+  render: ->
+    props = @props
+    selectedRevision = props.selectedRevision
+    revisionId = props.revisionId || selectedRevision.id
+    revisionSide = props.revisionSide || selectedRevision.side
+
+    td className: cx(
+      revisionTag: true
+      selected: revisionId == selectedRevision.id && selectedRevision.side == revisionSide
+      sideA: revisionSide == 'a'
+      sideB: revisionSide == 'b'
+    ), title: 'Hold [SHIFT] and press to set both sides' , onClick: ((e) ->
+      props.onClick && props.onClick({id: revisionId, side: revisionSide}, e)
+    ),
+      span null, revisionId
+      sup null, revisionSide
+
 
 RevisionSelector = React.createClass
   displayName: 'RevisionSelector'
@@ -51,23 +71,14 @@ RevisionSelector = React.createClass
             revisionIdSlice.map (revisionId) ->
               ['a', 'b'].map (revisionSide) ->
                 selectedRevision = props["revision#{selectorSide}"]
-                td key: "#{revisionId}_#{revisionSide}", className: cx(
-                  revisionTag: true
-                  selected: revisionId == selectedRevision.id && selectedRevision.side == revisionSide
-                  sideA: revisionSide == 'a'
-                  sideB: revisionSide == 'b'
-                ), onClick: (->
-                  try props["onRevision#{selectorSide}Click"](id: revisionId, side: revisionSide)
-                ),
-                  span null, revisionId
-                  sup null, revisionSide
+                RevisionTag {key: "#{revisionId}_#{revisionSide}", selectedRevision, revisionId, revisionSide, onClick: ((r, e) -> props.onRevisionTagClick(selectorSide, r, e))}
         )
     div className: 'revisionSelector',
       table className: 'summaryTable',
         tbody null,
           tr null,
             ['A', 'B'].map (j) ->
-              td key: "#{j}_1", className: 'revisionTag selected', props["revision#{j}"]
+              RevisionTag key: j, selectedRevision: props["revision#{j}"]
       table className: 'selectorTable',
         tbody null,
           trs
@@ -194,11 +205,17 @@ MetaData = React.createClass
     revisionA: {id: revisionId, side: 'a'}
     revisionB: {id: revisionId, side: 'b'}
 
-  handleRevisionAClick: (id) ->
-    @setState revisionA: id
-
-  handleRevisionBClick: (id) ->
-    @setState revisionB: id
+  handleRevisionTagClick: (side, revision, e) ->
+    state = {}
+    state["revision#{side}"] = revision
+    if e.shiftKey
+      # fill two sides
+      ['a', 'b'].forEach (side) ->
+        state["revision#{side.toUpperCase()}"] = {
+          id: revision.id
+          side: side
+        }
+    @setState state
 
   render: ->
     props = @props
@@ -217,7 +234,7 @@ MetaData = React.createClass
     div className: 'changeView',
       style null, ".diffSegment .lineWrapper{max-width: #{Math.max(100, state.windowWidth / 2 - 28)}px}"
       if revisionAvailable
-        RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
+        RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionTagClick: @handleRevisionTagClick
       if props.notice
         p className: 'changeNotice notes', props.notice
       h2 className: 'sectionTitle', 'Metadata'
