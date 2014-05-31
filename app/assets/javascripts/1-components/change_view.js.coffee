@@ -38,7 +38,7 @@ FileDiff = React.createClass
 
     div className: cx(fileDiff: true, highlight: props.highlight),
       h3 className: 'pathname', id: props.pathname, props.pathname
-      DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments, highlightLine: props.highlightLine, owner: props.owner}
+      DiffView {a: $a, b: $b, inlineComments: props.inlineComments, highlightLine: props.highlightLine, owner: props.owner}
 
 RevisionTag = React.createClass
   displayName: 'RevisionTag'
@@ -103,7 +103,9 @@ RevisionDiff = React.createClass
           pathname: x
           a: pullr(props.revisionA.files, x, props.revisionASide)
           b: pullr(props.revisionB.files, x, props.revisionBSide)
-          bInlineComments: pullr(props.revisionB.files, x, 'comments')
+          inlineComments:
+            a: props.revisionASide == 'b' && pullr(props.revisionA.files, x, 'comments')
+            b: props.revisionBSide == 'b' && pullr(props.revisionB.files, x, 'comments')
           highlight: highlightLine == 0
           highlightLine: highlightLine
           owner: props.owner

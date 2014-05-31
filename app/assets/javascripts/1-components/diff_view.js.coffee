@@ -70,7 +70,7 @@ InlineComment = React.createClass
 
   shouldComponentUpdate: (nextProps, nextState) ->
     props = @props
-    _.some ['a', 'b', 'highlightLine', 'bInlineComments'], (name) -> !_.isEqual(props[name], nextProps[name]) || !_.isEqual(@state, nextState)
+    _.some ['a', 'b', 'highlightLine', 'inlineComments'], (name) -> !_.isEqual(props[name], nextProps[name]) || !_.isEqual(@state, nextState)
 
   render: ->
     props = @props
@@ -104,10 +104,11 @@ InlineComment = React.createClass
 
     # collect inline comments
     inlineCommentBySideLine = {a: {}, b: {}}
-    props.bInlineComments && props.bInlineComments.forEach (comment) ->
-      return unless comment && comment.line
-      commentSet = (inlineCommentBySideLine.b[comment.line] ||= [])
-      commentSet.push(comment)
+    for side, inlineComments of props.inlineComments || {}
+      for comment in inlineComments || []
+        return unless comment && comment.line
+        commentSet = (inlineCommentBySideLine[side][comment.line] ||= [])
+        commentSet.push(comment)
 
     # render segment into lines
     renderSegmentLines = (segment, side) =>
