@@ -27,9 +27,7 @@ diffLines = (a, b) ->
 Line = React.createClass
   displayName: 'Line'
 
-  componentWillReceiveProps: (nextProps) ->
-    if nextProps.highlight && !@props.highlight
-      scrollTo @getDOMNode()
+  mixins: [JumpToIfHighlightMixin]
 
   render: ->
     props = @props

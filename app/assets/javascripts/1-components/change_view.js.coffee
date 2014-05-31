@@ -29,37 +29,16 @@ INLINE_COMMENT_ID_PREFIX = 'inline-comment-'
 FileDiff = React.createClass
   displayName: 'FileDiff'
 
-  getInitialState: ->
-    highlightLine: null
-
-  componentDidMount: ->
-    Callbacks.add 'jumpToFileLine', @handleJump
-
-  componentWillUnmount: ->
-    Callbacks.remove 'jumpToFileLine', @handleJump
-
-  handleJump: (place) ->
-    props = @props
-    highlightLine =
-      if place.pathname == props.pathname
-        place.line
-      else
-        null
-
-    if highlightLine == 0 && @state.highlightLine != 0
-      # jump to file header
-      scrollTo @refs.header.getDOMNode()
-
-    @setState {highlightLine}
+  mixins: [JumpToIfHighlightMixin]
 
   render: ->
     props = @props
     $a = props.a
     $b = props.b
 
-    div className: 'fileDiff',
-      h3 className: 'pathname', id: props.pathname, ref: 'header', props.pathname
-      DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments, highlightLine: @state.highlightLine, owner: props.owner}
+    div className: cx(fileDiff: true, highlight: props.highlight),
+      h3 className: 'pathname', id: props.pathname, props.pathname
+      DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments, highlightLine: props.highlightLine, owner: props.owner}
 
 RevisionTag = React.createClass
   displayName: 'RevisionTag'
@@ -118,12 +97,15 @@ RevisionDiff = React.createClass
     props = @props
     div className: 'fileSetDiff',
       props.pathnames.map (x) ->
+        highlightLine = props.highlight && props.highlight.type == 'line' && props.highlight.pathname == x && props.highlight.line
         FileDiff
           key: x
           pathname: x
           a: pullr(props.revisionA.files, x, props.revisionASide)
           b: pullr(props.revisionB.files, x, props.revisionBSide)
           bInlineComments: pullr(props.revisionB.files, x, 'comments')
+          highlight: highlightLine == 0
+          highlightLine: highlightLine
           owner: props.owner
 
 InlineCommentPathname = React.createClass
@@ -141,6 +123,8 @@ InlineCommentPathname = React.createClass
 InlineComment = React.createClass
   displayName: 'InlineComment'
 
+  mixins: [JumpToIfHighlightMixin]
+
   handleClick: ->
     props = @props
     revisionNumber = props.revisionNumber
@@ -148,7 +132,7 @@ InlineComment = React.createClass
 
   render: ->
     props = @props
-    span className: 'inlineComment',
+    span className: cx(inlineComment: true, highlight: props.highlight),
       span className: 'lineNo', id: "#{INLINE_COMMENT_ID_PREFIX}#{props.comment.id}", onClick: @handleClick, props.lineNo
       span className: 'inlineMessage', props.comment.message
 
@@ -164,7 +148,7 @@ InlineCommentList = React.createClass
         div key: pathname,
           InlineCommentPathname {pathname, revisionNumber}
           _(fileComments).map (comments, lineNo) ->
-            comments.map (comment) -> InlineComment {key: lineNo, revisionNumber, pathname, lineNo, comment}
+            comments.map (comment) -> InlineComment {key: lineNo, highlight: props.highlightInlineCommentId == comment.id, revisionNumber, pathname, lineNo, comment}
 
 Comment = React.createClass
   displayName: 'Comment'
@@ -191,7 +175,7 @@ Comment = React.createClass
               Timestamp className: 'date', time: props.date
             td className: 'message',
               TextSegment content: props.message,
-                props.inlineComments && InlineCommentList comments: props.inlineComments, revisionNumber: props.revisionNumber
+                props.inlineComments && InlineCommentList comments: props.inlineComments, revisionNumber: props.revisionNumber, highlightInlineCommentId: props.highlightInlineCommentId
 
 CommentList = React.createClass
   displayName: 'CommentList'
@@ -222,9 +206,12 @@ CommentList = React.createClass
           fileComments = pullw commentIdToInlineComments, commentId, pathname
           (fileComments[inlineComment.line] ||= []).push(inlineComment)
 
+    # highlight?
+    highlightInlineCommentId = props.highlight && props.highlight.type == 'inlineComment' && props.highlight.inlineCommentId
+
     div className: 'commentList',
       _.sortBy(comments, ((x) -> x.date)).map (comment) ->
-        Comment $.extend(key: comment.id, inlineComments: commentIdToInlineComments[comment.id], owner: props.owner, comment)
+        Comment $.extend(key: comment.id, inlineComments: commentIdToInlineComments[comment.id], owner: props.owner, highlightInlineCommentId: highlightInlineCommentId, comment)
 
 MetaData = React.createClass
   displayName: 'MetaData'
@@ -305,23 +292,20 @@ MetaData = React.createClass
               id: revisionId
               side: revisionSide
         when 'P' # pathname, one time
-          pathname = value
+          newState.highlight ||= {}
+          newState.highlight.type = 'line'
+          newState.highlight.pathname = value
         when 'L'
-          line = parseInt(value)
+          newState.highlight ||= {}
+          newState.highlight.type = 'line'
+          newState.highlight.line = parseInt(value)
         when 'I'
-          elementId = "#{INLINE_COMMENT_ID_PREFIX}#{value}"
+          newState.highlight ||= {}
+          newState.highlight.type = 'inlineComment'
+          newState.highlight.inlineCommentId = value
 
     if !_(newState).isEmpty()
       @setState newState
-
-    # jump to file, line
-    if line? && pathname
-      # redraw all so that selected revision / file is available
-      @forceUpdate()
-      # callback may be not ready, use setTimeout to defer the jump
-      setTimeout((-> Callbacks.fire 'jumpToFileLine', {line, pathname}), 1)
-    else if elementId
-      scrollTo document.getElementById(elementId)
 
   render: ->
     props = @props
@@ -346,8 +330,8 @@ MetaData = React.createClass
       h2 className: 'sectionTitle', 'Metadata'
       MetaData @props
       h2 className: 'sectionTitle', 'Comments'
-      CommentList comments: props.comments, revisions: props.revisions, owner: props.owner
+      CommentList comments: props.comments, revisions: props.revisions, owner: props.owner, highlight: state.highlight
       h2 className: 'sectionTitle', 'File Diffs'
       if revisionAvailable
-        RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side, owner: props.owner}
+        RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side, owner: props.owner, highlight: state.highlight}
 

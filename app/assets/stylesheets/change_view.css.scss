@@ -135,10 +135,14 @@
     display: block;
   }
 
+  .highlight {
+    background-color: #ffd;
+  }
+
   .lineNo {
     color: grey;
     display: inline-block;
-    margin-left: 20px;
+    padding-left: 20px;
     width: 50px;
     @include linkable;
   }
@@ -174,6 +178,11 @@
     margin: 0;
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
+  }
+  &.highlight {
+    .pathname {
+      background-color: #ffd;
+    }
   }
 }
 

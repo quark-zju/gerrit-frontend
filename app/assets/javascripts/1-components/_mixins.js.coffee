@@ -1,5 +1,4 @@
 @WindowSizeMixin =
-  # helper to include `editable`, `required` css classes
   handleWindowResize: ->
     @setState windowWidth: window.innerWidth, windowHeight: window.innerHeight
 
@@ -11,3 +10,14 @@
 
   componentWillUnmount: ->
     window.removeEventListener 'resize', @handleWindowResize
+
+scrollTo = @scrollTo
+
+@JumpToIfHighlightMixin =
+  componentDidMount: ->
+    if @props.highlight
+      scrollTo @getDOMNode()
+
+  componentWillReceiveProps: (nextProps) ->
+    if nextProps.highlight && !@props.highlight
+      scrollTo @getDOMNode()
