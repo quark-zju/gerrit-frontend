@@ -54,7 +54,7 @@ InlineComment = React.createClass
     comment = props.comment
     @transferPropsTo div className: 'inlineComment',
       Username className: cx(owner: comment.author.accountId == props.owner.accountId), user: comment.author, onClick: @handleClick
-      TextSegment className: 'message', content: comment.message
+      span className: 'message', content: comment.message, comment.message
 
 @DiffView = React.createClass
   displayName: 'DiffView'

@@ -174,8 +174,8 @@ Comment = React.createClass
               Username className: cx(author: true, owner: props.author.accountId == props.owner.accountId), user: props.author
               Timestamp className: 'date', time: props.date
             td className: 'message',
-              TextSegment content: props.message,
-                props.inlineComments && InlineCommentList comments: props.inlineComments, revisionNumber: props.revisionNumber, highlightInlineCommentId: props.highlightInlineCommentId
+              span null, props.message
+              props.inlineComments && InlineCommentList comments: props.inlineComments, revisionNumber: props.revisionNumber, highlightInlineCommentId: props.highlightInlineCommentId
 
 CommentList = React.createClass
   displayName: 'CommentList'
