@@ -1,2 +1,3 @@
 @scrollTo = (element) ->
-  document.body.scrollTop = $(element).offset().top
+  if element
+    document.body.scrollTop = $(element).offset().top

@@ -5,6 +5,7 @@ cx = React.addons.classSet
   hashString
   pullr
   scrollTo
+  updateLocationHash
 } = @
 
 LINES_BEFORE = 5
@@ -47,10 +48,14 @@ MoreButton = React.createClass
 InlineComment = React.createClass
   displayName: 'InlineComment'
 
+  handleClick: ->
+    updateLocationHash L: null, P: null, I: @props.comment.id
+
   render: ->
-    comment = @props.comment
+    props = @props
+    comment = props.comment
     @transferPropsTo div className: 'inlineComment',
-      Username user: comment.author
+      Username className: cx(owner: comment.author.accountId == props.owner.accountId), user: comment.author, onClick: @handleClick
       TextSegment className: 'message', content: comment.message
 
 @DiffView = React.createClass
@@ -129,7 +134,7 @@ InlineComment = React.createClass
           Line key: j, lineNo: currentLineNo, content: s, highlight: side == 'b' && props.highlightLine == currentLineNo,
             if (currentInlineComments = inlineCommentBySideLine[side][currentLineNo])
               currentInlineComments.map (comment) ->
-                InlineComment key: comment.id, comment: comment
+                InlineComment key: comment.id, comment: comment, owner: props.owner
 
     if segments.length == 1 && segments[0].class == 'equal' && !@state.wholeDiffExpanded
       div className: 'diffView',

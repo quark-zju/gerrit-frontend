@@ -24,9 +24,7 @@ cx = React.addons.classSet
   'VMware'
 ]
 
-LOCATION_HASH_SPLITTER = ';'
-LOCATION_HASH_KEY_VALUE_SPLITTER = ':'
-
+INLINE_COMMENT_ID_PREFIX = 'inline-comment-'
 
 FileDiff = React.createClass
   displayName: 'FileDiff'
@@ -61,7 +59,7 @@ FileDiff = React.createClass
 
     div className: 'fileDiff',
       h3 className: 'pathname', id: props.pathname, ref: 'header', props.pathname
-      DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments, highlightLine: @state.highlightLine}
+      DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments, highlightLine: @state.highlightLine, owner: props.owner}
 
 RevisionTag = React.createClass
   displayName: 'RevisionTag'
@@ -126,6 +124,7 @@ RevisionDiff = React.createClass
           a: pullr(props.revisionA.files, x, props.revisionASide)
           b: pullr(props.revisionB.files, x, props.revisionBSide)
           bInlineComments: pullr(props.revisionB.files, x, 'comments')
+          owner: props.owner
 
 InlineCommentPathname = React.createClass
   displayName: 'InlineCommentPathname'
@@ -133,7 +132,7 @@ InlineCommentPathname = React.createClass
   handleClick: ->
     props = @props
     revisionNumber = props.revisionNumber
-    updateLocationHash P: props.pathname, L: 0, A: "#{revisionNumber}a", B: "#{revisionNumber}b"
+    updateLocationHash P: props.pathname, L: 0, A: "#{revisionNumber}a", B: "#{revisionNumber}b", I: null
 
   render: ->
     pathname = @props.pathname
@@ -145,12 +144,12 @@ InlineComment = React.createClass
   handleClick: ->
     props = @props
     revisionNumber = props.revisionNumber
-    updateLocationHash P: props.pathname, L: props.lineNo, A: "#{revisionNumber}a", B: "#{revisionNumber}b"
+    updateLocationHash P: props.pathname, L: props.lineNo, A: "#{revisionNumber}a", B: "#{revisionNumber}b", I: null
 
   render: ->
     props = @props
     span className: 'inlineComment',
-      span className: 'lineNo', onClick: @handleClick, props.lineNo
+      span className: 'lineNo', id: "#{INLINE_COMMENT_ID_PREFIX}#{props.comment.id}", onClick: @handleClick, props.lineNo
       span className: 'inlineMessage', props.comment.message
 
 InlineCommentList = React.createClass
@@ -274,7 +273,7 @@ MetaData = React.createClass
     revisionB: {id: revisionId, side: 'b'}
 
   handleRevisionTagClick: (side, revision, e) ->
-    newHash = {}
+    newHash = {I: null, P: null, L: null}
     revisionToString = (revision) -> "#{revision.id}#{revision.side.toLowerCase()}"
     if e.shiftKey
       # fill two sides
@@ -290,6 +289,7 @@ MetaData = React.createClass
     hash = location.hash.replace(/^#/, '')
     line = null
     pathname = null
+    elementId = null
 
     # do not proceed if hash is not changed
     return if hash == @lastLocationHash
@@ -308,6 +308,8 @@ MetaData = React.createClass
           pathname = value
         when 'L'
           line = parseInt(value)
+        when 'I'
+          elementId = "#{INLINE_COMMENT_ID_PREFIX}#{value}"
 
     if !_(newState).isEmpty()
       @setState newState
@@ -318,6 +320,8 @@ MetaData = React.createClass
       @forceUpdate()
       # callback may be not ready, use setTimeout to defer the jump
       setTimeout((-> Callbacks.fire 'jumpToFileLine', {line, pathname}), 1)
+    else if elementId
+      scrollTo document.getElementById(elementId)
 
   render: ->
     props = @props
@@ -345,5 +349,5 @@ MetaData = React.createClass
       CommentList comments: props.comments, revisions: props.revisions, owner: props.owner
       h2 className: 'sectionTitle', 'File Diffs'
       if revisionAvailable
-        RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side}
+        RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side, owner: props.owner}
 

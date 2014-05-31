@@ -27,3 +27,11 @@
     transform: scale(1);
   }
 }
+
+@mixin linkable($color: $select-color) {
+  cursor: pointer;
+  &:hover {
+    color: $color;
+    text-decoration: underline;
+  }
+}
