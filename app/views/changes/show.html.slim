@@ -1,5 +1,5 @@
 - if @change
-  - content_for :title, "#{@change.number} | #{@change.host.hostname}"
+  - content_for :title, "#{@change.number} #{@change.subject} | #{@change.host.hostname}"
   div#ChangeViewRoot
   script
     | var changeViewProps = #{@change.as_json(true).to_json.html_safe}
