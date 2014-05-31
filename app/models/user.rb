@@ -13,12 +13,15 @@
 class User < ActiveRecord::Base
   belongs_to :host
 
+  REQUIRED_FIELDS = %w[_account_id]
+
   def self.from_json(data)
-    raise ArgumentError, 'data should have _account_id, name, username set' unless (data.keys & %w[_account_id name username]).length == 3
+    filled_fields = data.keys & REQUIRED_FIELDS
+    raise ArgumentError, "data should have #{REQUIRED_FIELDS} set, but only #{filled_fields}" unless filled_fields.length == REQUIRED_FIELDS.length
     where(account_id: data['_account_id']).first_or_create!(
       email: data['email'] || '',
-      name: data['name'],
-      username: data['username'],
+      name: data['name'] || data['username'] || data['_account_id'],
+      username: data['username'] || data['_account_id'],
     )
   end
 
