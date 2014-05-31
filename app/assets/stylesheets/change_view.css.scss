@@ -112,9 +112,7 @@
     }
 
     &.bot {
-      border-bottom-color: transparent;
-      border-color: #f5f5f5;
-      border-top-color: transparent;
+      border-color: transparent #f5f5f5;
       color: #bbb;
       margin-top: 0;
       .date {
