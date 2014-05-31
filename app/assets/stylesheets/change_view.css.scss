@@ -175,12 +175,13 @@
 
 .fileDiff {
   .pathname {
-    display: block;
-    padding: 10px;
     background-color: #eee;
-    margin: 0;
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
+    display: block;
+    margin: 0;
+    padding: 10px;
+    word-break: break-word;
   }
   &.highlight {
     .pathname {

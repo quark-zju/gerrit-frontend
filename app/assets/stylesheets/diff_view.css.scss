@@ -13,7 +13,7 @@
     user-select: none;
     width: 100%;
     padding: 5px 0;
-    background-color: #EEE;
+    background-color: #F5F5F5;
     color: grey;
 
     @include linkable;
@@ -40,7 +40,6 @@
     display: inline-block;
     overflow: hidden;
     vertical-align: top;
-    white-space: pre;
     word-break: break-all;
     word-wrap: break-word;
   }
@@ -51,6 +50,7 @@
     margin-left: 40px;
     min-height: 14px;
     padding: 0;
+    white-space: pre-wrap;
   }
 
   .inlineComment {

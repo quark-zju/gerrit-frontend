@@ -240,8 +240,6 @@ MetaData = React.createClass
 @ChangeView = React.createClass
   displayName: 'ChangeView'
 
-  mixins: [WindowSizeMixin]
-
   componentWillMount: ->
     @handleLocationHashChange()
     return
@@ -322,7 +320,6 @@ MetaData = React.createClass
       []
 
     div className: 'changeView',
-      style null, ".diffSegment .code{max-width: #{Math.max(100, state.windowWidth / 2 - 70)}px}"
       if revisionAvailable
         RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionTagClick: @handleRevisionTagClick
       if props.notice
