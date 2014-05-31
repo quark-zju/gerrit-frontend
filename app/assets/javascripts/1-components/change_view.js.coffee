@@ -268,26 +268,21 @@ MetaData = React.createClass
     window.removeEventListener 'hashchange', @handleLocationHashChange
     return
 
-  componentDidUpdate: (prevProps, prevState) ->
-    @setLocationHash()
-    return
-
   getInitialState: ->
     revisionId = _.max(@props.revisions.map((x) -> x.revisionId))
     revisionA: {id: revisionId, side: 'a'}
     revisionB: {id: revisionId, side: 'b'}
 
   handleRevisionTagClick: (side, revision, e) ->
-    state = {}
-    state["revision#{side}"] = revision
+    newHash = {}
+    revisionToString = (revision) -> "#{revision.id}#{revision.side.toLowerCase()}"
     if e.shiftKey
       # fill two sides
       ['a', 'b'].forEach (side) ->
-        state["revision#{side.toUpperCase()}"] = {
-          id: revision.id
-          side: side
-        }
-    @setState state
+        newHash[side.toUpperCase()] = revisionToString id: revision.id, side: side
+    else
+      newHash[side] = revisionToString(revision)
+    updateLocationHash newHash
 
   handleLocationHashChange: ->
     newState = {}
@@ -323,16 +318,6 @@ MetaData = React.createClass
       @forceUpdate()
       # callback may be not ready, use setTimeout to defer the jump
       setTimeout((-> Callbacks.fire 'jumpToFileLine', {line, pathname}), 1)
-
-  setLocationHash: ->
-    state = @state
-    hashMap = {}
-    # append revision information
-    ['A', 'B'].forEach (side) ->
-      revision = state["revision#{side}"]
-      if revision.id >= 0
-        hashMap[side] = "#{revision.id}#{revision.side}"
-    @lastLocationHash = updateLocationHash hashMap
 
   render: ->
     props = @props
