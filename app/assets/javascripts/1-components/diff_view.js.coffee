@@ -1,5 +1,6 @@
 {div, span, table, code, tbody, thead, tr, td, i, input, li, ul, p, pre, br} = React.DOM
 
+Callbacks = @dpm.Callbacks.get()
 cx = React.addons.classSet
 pullr = @pullr
 
@@ -12,7 +13,7 @@ Line = React.createClass
 
   render: ->
     props = @props
-    span className: 'lineWrapper',
+    span className: cx(lineWrapper: true, highlight: props.highlight),
       span className: 'lineNo', props.lineNo
       pre className: 'code', props.content
       props.children
@@ -44,6 +45,10 @@ InlineComment = React.createClass
     # reset state if content is changed
     if nextProps.a != @props.a || nextProps.b != @props.b
       @setState @getInitialState()
+
+  shouldComponentUpdate: (nextProps, nextState) ->
+    props = @props
+    _.some ['a', 'b', 'highlightLine', 'bInlineComments'], (name) -> !_.isEqual(props[name], nextProps[name])
 
   render: ->
     props = @props
@@ -102,7 +107,7 @@ InlineComment = React.createClass
             moreButtonDrawn = true
             MoreButton key: j, onClick: ((e) -> expandLine segment.id, if e.shiftKey then Infinity else LINES_EXPAND_ONCE)
         else
-          Line key: j, lineNo: currentLineNo, content: s,
+          Line key: j, lineNo: currentLineNo, content: s, highlight: side == 'b' && props.highlightLine == currentLineNo,
             if (currentInlineComments = inlineCommentBySideLine[side][currentLineNo])
               currentInlineComments.map (comment) ->
                 InlineComment key: comment.id, comment: comment

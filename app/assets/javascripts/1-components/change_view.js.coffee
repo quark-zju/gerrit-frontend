@@ -1,5 +1,6 @@
 {a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, h3, sup, style} = React.DOM
 
+Callbacks = @dpm.Callbacks.get()
 cx = React.addons.classSet
 pullr = @pullr
 pullw = @pullw
@@ -19,8 +20,54 @@ pullw = @pullw
   'VMware'
 ]
 
+LOCATION_HASH_SPLITTER = ';'
+LOCATION_HASH_KEY_VALUE_SPLITTER = ':'
+
+getLocationHash = ->
+  hash = location.hash.replace(/^#/, '')
+  hashMap = {}
+  for segment in hash.split(LOCATION_HASH_SPLITTER)
+    [k, v] = segment.split(LOCATION_HASH_KEY_VALUE_SPLITTER)
+    hashMap[k] = v
+  hashMap
+
+updateLocationHash = (newHashMap) ->
+  return hash unless !_(newHashMap).isEmpty()
+  hashMap = getLocationHash()
+  $.extend hashMap, newHashMap
+  newHash = []
+  for k, v of hashMap
+    if v && "#{v}".length > 0
+      newHash.push "#{k}#{LOCATION_HASH_KEY_VALUE_SPLITTER}#{v}"
+  newHash = newHash.join(LOCATION_HASH_SPLITTER)
+  oldHash = location.hash.replace(/^#/, '')
+  if oldHash != newHash
+    location.hash = newHash
+  newHash
+
+
 FileDiff = React.createClass
   displayName: 'FileDiff'
+
+  getInitialState: ->
+    highlightLine: null
+
+  componentDidMount: ->
+    Callbacks.addCallback 'jumpToFileLine', this, 'handleJump'
+    return
+
+  componentWillUnmount: ->
+    Callbacks.removeCallback 'jumpToFileLine', this, 'handleJump'
+    return
+
+  handleJump: (place) ->
+    props = @props
+    highlightLine =
+      if place.pathname == props.pathname
+        place.line
+      else
+        null
+    @setState {highlightLine}
 
   render: ->
     props = @props
@@ -31,7 +78,7 @@ FileDiff = React.createClass
 
     div className: 'fileDiff',
       h3 className: 'pathname', id: props.pathname, props.pathname
-      DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments}
+      DiffView {a: $a, b: $b, bInlineComments: props.bInlineComments, highlightLine: @state.highlightLine}
 
 RevisionTag = React.createClass
   displayName: 'RevisionTag'
@@ -97,16 +144,26 @@ RevisionDiff = React.createClass
           b: pullr(props.revisionB.files, x, props.revisionBSide)
           bInlineComments: pullr(props.revisionB.files, x, 'comments')
 
-InlineComments = React.createClass
-  displayName: 'InlineComments'
+InlineCommentPathname = React.createClass
+  displayName: 'InlineCommentPathname'
+
+  handleClick: ->
+    Callbacks.fireCallback 'jumpTo', pathname: @props.pathname, revisionNumber: @props.revisionNumber, line: 1
+
+  render: ->
+    pathname = @props.pathname
+    span className: 'inlineCommentFileName', onClick: @handleClick, pathname
+
+InlineCommentList = React.createClass
+  displayName: 'InlineCommentList'
 
   render: ->
     props = @props
 
     div className: 'inlineCommentList',
-      _(props.inlineComments).map (fileComments, pathname) =>
+      _(props.comments).map (fileComments, pathname) =>
         div key: pathname,
-          a href: "##{pathname}", className: 'inlineCommentFileName', pathname
+          InlineCommentPathname pathname: pathname, revisionNumber: props.revisionNumber
           _(fileComments).map (comments, lineNo) =>
             comments.map (comment) =>
               span className: 'inlineComment',
@@ -138,7 +195,7 @@ Comment = React.createClass
               Timestamp className: 'date', time: props.date
             td className: 'message',
               TextSegment content: props.message,
-                props.inlineComments && InlineComments inlineComments: props.inlineComments
+                props.inlineComments && InlineCommentList comments: props.inlineComments, revisionNumber: props.revisionNumber
 
 CommentList = React.createClass
   displayName: 'CommentList'
@@ -195,10 +252,22 @@ MetaData = React.createClass
       )
     table className: 'metaDataTable', trs
 
+
+# Top-Level
 @ChangeView = React.createClass
   displayName: 'ChangeView'
 
   mixins: [WindowSizeMixin]
+
+  componentDidMount: ->
+    window.addEventListener 'hashchange', @handleLocationHashChange, false
+    Callbacks.addCallback 'jumpTo', this, 'handleJump'
+    return
+
+  componentWillUnmount: ->
+    window.removeEventListener 'hashchange', @handleLocationHashChange
+    Callbacks.removeCallback 'jumpTo', this, 'handleJump'
+    return
 
   getInitialState: ->
     revisionId = _.max(@props.revisions.map((x) -> x.revisionId))
@@ -217,6 +286,56 @@ MetaData = React.createClass
         }
     @setState state
 
+  handleLocationHashChange: ->
+    newState = {}
+    props = @props
+    hash = location.hash.replace(/^#/, '')
+    jumpToFile = {}
+
+    # do not proceed if hash is not changed
+    return if hash == @lastLocationHash
+    @lastLocationHash = hash
+
+    for key, value of getLocationHash()
+      switch key
+        when 'A', 'B'
+          revisionId = parseInt(value)
+          revisionSide = value[-1..-1].toLowerCase()
+          if _.find(props.revisions, (x) -> x.revisionId == revisionId)
+            newState["revision#{key}"] =
+              id: revisionId
+              side: revisionSide
+        when 'P' # pathname, one time
+          1
+
+    if !_(newState).isEmpty()
+      @setState newState
+
+  handleJump: (place) ->
+    hashMap = {}
+    hashMap['L'] = line = place.line
+    hashMap['P'] = pathname = place.pathname
+    if place.revisionNumber
+      hashMap['A'] = "#{place.revisionNumber}a"
+      hashMap['B'] = "#{place.revisionNumber}b"
+    return if _(hashMap).isEmpty()
+    updateLocationHash hashMap
+    if line && pathname
+      # redraw all so that selected revision / file is displayed
+      @forceUpdate()
+      # jump to selected line
+      Callbacks.fireCallback 'jumpToFileLine', {line, pathname}
+
+  setLocationHash: ->
+    state = @state
+    hashMap = {}
+    # append revision information
+    ['A', 'B'].forEach (side) ->
+      revision = state["revision#{side}"]
+      if revision.id >= 0
+        hashMap[side] = "#{revision.id}#{revision.side}"
+    @lastLocationHash = updateLocationHash hashMap
+
   render: ->
     props = @props
     state = @state
@@ -230,6 +349,8 @@ MetaData = React.createClass
       )
     else
       []
+
+    @setLocationHash()
 
     div className: 'changeView',
       style null, ".diffSegment .lineWrapper{max-width: #{Math.max(100, state.windowWidth / 2 - 28)}px}"

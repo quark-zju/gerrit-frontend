@@ -32,6 +32,9 @@
     display: block;
     font-size: 0; /* get rid of mysterious whitespace caused by inline-block */
     overflow: hidden;
+    &.highlight {
+      background-color: #ffd;
+    }
   }
 
   .code, .lineNo {
