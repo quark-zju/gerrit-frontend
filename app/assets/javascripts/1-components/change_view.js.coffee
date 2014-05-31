@@ -205,8 +205,8 @@ MetaData = React.createClass
       style null, ".diffSegment .lineWrapper{max-width: #{Math.max(100, state.windowWidth / 2 - 28)}px}"
       if revisionAvailable
         RevisionSelector revisionIds: props.revisions.map((x) -> x.revisionId), revisionA: state.revisionA, revisionB: state.revisionB, onRevisionBClick: @handleRevisionBClick, onRevisionAClick: @handleRevisionAClick
-      if props.fetching
-        p className: 'fetchingTip', 'Note: Importing in progress. Current data may be not complete.'
+      if props.notice
+        p className: 'changeNotice notes', "Note: #{props.notice}"
       h2 className: 'sectionTitle', 'Metadata'
       MetaData @props
       h2 className: 'sectionTitle', 'Comments'

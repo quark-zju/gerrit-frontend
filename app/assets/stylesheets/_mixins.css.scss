@@ -1,0 +1,29 @@
+@mixin flat-button($color, $background, $hover-background: darken($background, 20%), $active-background: darken($hover-background, 20%)) {
+  background: transparent;
+  border: none;
+  color: $color;
+  cursor: pointer;
+  background-color: $background;
+  transition: background .3s, opacity .3s, transform .3s;
+
+  &:hover {
+    background-color: $hover-background;
+  }
+
+  &:active {
+    background-color: $active-background;
+    transform: scale(0.9)
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: inherit;
+    &:hover, &:active {
+      background-color: $background;
+    }
+  }
+
+  &[disabled]:active {
+    transform: scale(1);
+  }
+}

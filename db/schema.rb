@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140530163722) do
+ActiveRecord::Schema.define(version: 20140530172427) do
 
   create_table "change_comments", force: true do |t|
     t.integer  "author_id",       null: false
@@ -69,6 +69,7 @@ ActiveRecord::Schema.define(version: 20140530163722) do
   create_table "hosts", force: true do |t|
     t.string  "base_url",                        null: false
     t.boolean "allow_anonymous", default: false, null: false
+    t.boolean "is_local_net",    default: false, null: false
   end
 
   create_table "projects", force: true do |t|

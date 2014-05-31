@@ -26,8 +26,9 @@ class Change < ActiveRecord::Base
 
   class ChangeNotFound < RuntimeError; end
 
-  STATUS_FETCHING = 1
   STATUS_IDLE = 0
+  STATUS_QUEUED = 1
+  STATUS_FETCHING = 2
 
   def self.fetch(gerrit, options)
     case options
@@ -76,12 +77,14 @@ class Change < ActiveRecord::Base
 
     update = options[:update]
     if update || (change.revisions.empty? && change.status != STATUS_FETCHING)
-      change.update_column :status, STATUS_FETCHING
-      change.delay.fetch_dependencies(
-        gerrit,
-        update.to_i >= 2, # force update revision
-        true, # skip status check
-      )
+      change.update_column :status, STATUS_QUEUED
+      force_update_revision = update.to_i >= 2
+      fetch_params = [gerrit, force_update_revision]
+      if change.host.is_local_net
+        change.fetch_dependencies(*fetch_params)
+      else
+        change.delay.fetch_dependencies(*fetch_params)
+      end
     end
 
     change
@@ -89,9 +92,8 @@ class Change < ActiveRecord::Base
     nil
   end
 
-  def fetch_dependencies(gerrit, force_update_revision = false, skip_status_check = false)
-    # logger.log ["fetch_dependencies", force_update_revision, skip_status_check]
-    return if status == STATUS_FETCHING && !skip_status_check
+  def fetch_dependencies(gerrit, force_update_revision = false)
+    return if status == STATUS_FETCHING
     update_column :status, STATUS_FETCHING
     begin
       fetch_comments gerrit
@@ -132,13 +134,18 @@ class Change < ActiveRecord::Base
     end
   end
 
+  STATUS_NOTES = {
+    STATUS_FETCHING => 'Importing in progress. Current data is probably incomplete.',
+    STATUS_QUEUED => 'Scheduled for importing. Current data is probably incomplete.',
+  }
+
   def as_json(deep = false)
     result = {
       branch: branch,
       changeId: change_id,
       createdAt: created_at,
-      fetching: status == STATUS_FETCHING,
       host: host.as_json,
+      notice: STATUS_NOTES[status],
       number: number,
       owner: owner.as_json,
       project: project.as_json,

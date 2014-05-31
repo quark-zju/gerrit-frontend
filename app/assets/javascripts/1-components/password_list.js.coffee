@@ -21,19 +21,20 @@ cx = React.addons.classSet
       username: @state.currentUsername
       password: @state.currentPassword
     )
+    @submitPasswords passwords
     @setState {passwords, currentUsername: '', currentBaseUrl: '', currentPassword: ''}
 
   handleRemoveButtonClick: (baseUrl) ->
     passwords = _.reject(@state.passwords, (x) -> x.base_url == baseUrl)
+    @submitPasswords passwords
     @setState {passwords}
 
-  handleSubmitClick: ->
+  submitPasswords: (passwords) ->
     return if @state.busy
-    @handleAddButtonClick()
     @setState busy: true
     $.post(
       Routes.passwords_path(),
-      passwords: @state.passwords
+      passwords: passwords
     ).fail(
       -> alert('Cannot save passwords. Please try again later.')
     ).always(
@@ -57,7 +58,7 @@ cx = React.addons.classSet
               td className: 'username', x.username
               td className: 'password', '<hidden>'
               td className: 'actions',
-                button className: 'removeButton', onClick: @handleRemoveButtonClick.bind(this, x.base_url), '-'
+                button className: 'removeButton', disabled: state.busy, onClick: @handleRemoveButtonClick.bind(this, x.base_url), '-'
           tr key: 'new', className: 'passwordItem',
             td className: 'baseUrl',
               input className: cx(illegal: illegalBaseUrl),  name: 'base_url', placeholder: 'https://gerrit.example.com', value: state.currentBaseUrl, onChange: ((e) => @setState currentBaseUrl: e.target.value)
@@ -66,5 +67,4 @@ cx = React.addons.classSet
             td className: 'password',
               input name: 'password', value: state.currentPassword, onChange: ((e) => @setState currentPassword: e.target.value)
             td className: 'actions',
-              button className: 'addButton', disabled: illegalBaseUrl, onClick: @handleAddButtonClick, '+'
-      button className: 'submit', disabled: @state.busy, onClick: @handleSubmitClick, 'Update'
+              button className: 'addButton', disabled: illegalBaseUrl || state.busy, onClick: @handleAddButtonClick, '+'
