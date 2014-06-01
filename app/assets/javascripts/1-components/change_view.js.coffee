@@ -26,6 +26,14 @@ cx = React.addons.classSet
 
 INLINE_COMMENT_ID_PREFIX = 'inline-comment-'
 
+detectLanguage = (pathname, content) ->
+  # highlight.js's language detection is very poor. handle some common cases here.
+  return 'http' if pathname == '/COMMIT_MSG'
+  return 'python' if pathname.match(/\.py$/i) || content.match(/#!.*python/)
+  return 'ini' if pathname.match(/\.conf$/i)
+  # let highlight.js decide
+  return null
+
 FileDiff = React.createClass
   displayName: 'FileDiff'
 
@@ -33,12 +41,13 @@ FileDiff = React.createClass
 
   render: ->
     props = @props
-    $a = props.a
-    $b = props.b
+    $a = props.a || ''
+    $b = props.b || ''
+    pathname = props.pathname
 
     div className: cx(fileDiff: true, highlight: props.highlight),
-      h3 className: 'pathname', id: props.pathname, props.pathname
-      DiffView {a: $a, b: $b, inlineComments: props.inlineComments, highlightLine: props.highlightLine, owner: props.owner}
+      h3 className: 'pathname', id: pathname, pathname
+      DiffView {a: $a, b: $b, inlineComments: props.inlineComments, highlightLine: props.highlightLine, owner: props.owner, highlightJsEnabled: true, highlightJsLanguage: detectLanguage(pathname, $a)}
 
 RevisionTag = React.createClass
   displayName: 'RevisionTag'

@@ -17,5 +17,6 @@
 //= require underscore
 //= require js_diff
 //= require moment
+//= require highlight.pack
 //= require js-routes
 //= require_tree .
