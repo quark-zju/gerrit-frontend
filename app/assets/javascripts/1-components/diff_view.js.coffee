@@ -82,6 +82,9 @@ Line = React.createClass
 
   mixins: [JumpToIfHighlightMixin]
 
+  shouldComponentUpdate: (nextProps) ->
+    !_.isEqual(@props, nextProps)
+
   render: ->
     props = @props
     span className: cx(lineWrapper: true, highlight: props.highlight),
@@ -107,10 +110,13 @@ InlineComment = React.createClass
   handleClick: ->
     updateLocationHash L: null, P: null, I: @props.comment.id
 
+  shouldComponentUpdate: (nextProps, nextState) ->
+    !_.isEqual(@props, nextProps)
+
   render: ->
     props = @props
     comment = props.comment
-    @transferPropsTo div className: 'inlineComment',
+    div className: 'inlineComment',
       Username className: cx(owner: comment.author.accountId == props.owner.accountId), user: comment.author, onClick: @handleClick
       span className: 'message', comment.message
 
@@ -127,8 +133,7 @@ InlineComment = React.createClass
       @setState @getInitialState()
 
   shouldComponentUpdate: (nextProps, nextState) ->
-    props = @props
-    _.some ['a', 'b', 'highlightLine', 'inlineComments'], (name) -> !_.isEqual(props[name], nextProps[name]) || !_.isEqual(@state, nextState)
+    !_.isEqual(@props, nextProps) || !_.isEqual(@state, nextState)
 
   render: ->
     props = @props
@@ -164,7 +169,7 @@ InlineComment = React.createClass
 
     # helper function: expand a segment
     expandLine = (lineNo, count = LINES_EXPAND_ONCE) =>
-      segmentExpanded = @state.segmentExpanded
+      segmentExpanded = _.clone(@state.segmentExpanded)
       segmentExpanded[lineNo] = (segmentExpanded[lineNo] || 0) + count
       @setState {segmentExpanded}
 

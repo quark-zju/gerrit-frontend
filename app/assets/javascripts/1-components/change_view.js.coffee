@@ -38,6 +38,9 @@ FileDiff = React.createClass
 
   mixins: [JumpToIfHighlightMixin]
 
+  shouldComponentUpdate: (nextProps, nextState) ->
+    !_.isEqual(@props, nextProps) || !_.isEqual(@state, nextState)
+
   render: ->
     props = @props
     $a = props.a || ''
@@ -183,6 +186,9 @@ Comment = React.createClass
     # hide bot's comments by default
     collapsed: @isBot()
 
+  shouldComponentUpdate: (nextProps, nextState) ->
+    !_.isEqual(@props, nextProps) || !_.isEqual(@state, nextState)
+
   handleClick: ->
     if @state.collapsed
       @setState collapsed: !@state.collapsed
@@ -206,11 +212,17 @@ Comment = React.createClass
 CommentList = React.createClass
   displayName: 'CommentList'
 
-  render: ->
+  shouldComponentUpdate: (nextProps) ->
+    # only highlight may change
+    !_.isEqual(@props.highlight, nextProps.highlight)
+
+  componentWillMount: ->
+    # assume that comments won't change (because ChangeView is top-level)
+    # attach inline comments to standard comments only once
     props = @props
     comments = props.comments
 
-    # merge inline comments into normal comments (by author, date)
+    # step 0: prepare variables
     commentAuthorDateToId = {}
     commentIdToInlineComments = {}
     getCommentAuthorDate = (comment) -> "#{comment.author.accountId}.#{Date.parse(comment.date)}"
@@ -232,6 +244,13 @@ CommentList = React.createClass
           fileComments = pullw commentIdToInlineComments, commentId, pathname
           (fileComments[inlineComment.line] ||= []).push(inlineComment)
 
+    @commentIdToInlineComments = commentIdToInlineComments
+
+  render: ->
+    props = @props
+    comments = props.comments
+    commentIdToInlineComments = @commentIdToInlineComments
+
     # highlight?
     highlightInlineCommentId = props.highlight && props.highlight.type == 'inlineComment' && props.highlight.inlineCommentId
 
@@ -241,6 +260,10 @@ CommentList = React.createClass
 
 MetaData = React.createClass
   displayName: 'MetaData'
+
+  shouldComponentUpdate: (nextProps) ->
+    !_.isEqual(@props, nextProps)
+
   render: ->
     props = @props
     trs = []
@@ -280,7 +303,7 @@ FileIndex = React.createClass
     paddingTop = 15
     top = e.clientY - (selectedIndex + 0.5) * itemHeight - paddingTop
     top = Math.min(window.innerHeight - @refs.list.getDOMNode().clientHeight, top)
-    top = Math.max(top, 0)
+    top = Math.max(top, 50)
     @setState {top}
 
   handleMouseLeave: (e) ->
