@@ -315,8 +315,7 @@ FileIndex = React.createClass
     if state.top?
       top: state.top
     else
-      width: 0
-      maxWidth: 0
+      top: -5000
 
   render: ->
     selectedPathname = getLocationHash()['P']

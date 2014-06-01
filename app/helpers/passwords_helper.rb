@@ -9,7 +9,7 @@ module PasswordsHelper
   end
 
   def update_passwords new_passwords
-    next_passwords = cookies.signed[:passwords]
+    next_passwords = cookies.signed[:passwords] || []
     # remove deleted passwords
     next_passwords.reject! do |x|
       new_passwords.none? {|y| y['base_url'] == x['base_url']}
