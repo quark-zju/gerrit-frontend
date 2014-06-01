@@ -10,33 +10,35 @@ cx = React.addons.classSet
     busy: false
 
   isBaseUrlIllegal: ->
-    url = @state.currentBaseUrl
-    !url || !url.match(/^https?:\/\/[^.]+\.[^.]+/i) || _.find(@state.passwords, (x) -> x.base_url == url)
+    url = @state.currentBaseUrl || ''
+    return false if url == ''
+    !url.match(/^https?:\/\/[^.]+\.[^.]+/i) || _.find(@state.passwords, (x) -> x.base_url == url)
 
   handleAddButtonClick: ->
-    return if @isBaseUrlIllegal()
-    passwords = @state.passwords
+    return if @isBaseUrlIllegal() || (@state.currentBaseUrl || '').length == 0
+    passwords = _.clone(@state.passwords)
     passwords.push(
       base_url: @state.currentBaseUrl
       username: @state.currentUsername
       password: @state.currentPassword
     )
-    @submitPasswords passwords
-    @setState {passwords, currentUsername: '', currentBaseUrl: '', currentPassword: ''}
+    @submitPasswords(passwords, (=> @setState {passwords, currentUsername: '', currentBaseUrl: '', currentPassword: ''}))
 
   handleRemoveButtonClick: (baseUrl) ->
-    passwords = _.reject(@state.passwords, (x) -> x.base_url == baseUrl)
-    @submitPasswords passwords
-    @setState {passwords}
+    passwords = _.reject(_.clone(@state.passwords), (x) -> x.base_url == baseUrl)
+    @submitPasswords(passwords, (=> @setState {passwords}))
 
-  submitPasswords: (passwords) ->
+  submitPasswords: (passwords, onSuccess, onError) ->
     return if @state.busy
     @setState busy: true
     $.post(
       Routes.passwords_path(),
       passwords: passwords
-    ).fail(
-      -> alert('Cannot save passwords. Please try again later.')
+    ).done((data)->
+      onSuccess(data) if onSuccess
+    ).fail((data)->
+      alert('Cannot save passwords. Please try again later.')
+      onError(data) if onError
     ).always(
       => @setState busy: false
     )
@@ -67,4 +69,4 @@ cx = React.addons.classSet
             td className: 'password',
               input name: 'password', value: state.currentPassword, onChange: ((e) => @setState currentPassword: e.target.value)
             td className: 'actions',
-              button className: 'addButton', disabled: illegalBaseUrl || state.busy, onClick: @handleAddButtonClick, '+'
+              button className: 'addButton', disabled: illegalBaseUrl || state.busy || (state.currentBaseUrl || '').length == 0, onClick: @handleAddButtonClick, '+'
