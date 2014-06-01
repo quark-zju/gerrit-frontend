@@ -1,4 +1,4 @@
-{a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, h3, sup, style} = React.DOM
+{a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, h3, sup, style, select, option} = React.DOM
 
 cx = React.addons.classSet
 {
@@ -261,6 +261,53 @@ MetaData = React.createClass
       )
     table className: 'metaDataTable', trs
 
+FileIndex = React.createClass
+  displayName: 'FileIndex'
+
+  getInitialState: ->
+    top: null
+
+  handleFileItemClick: (pathname, e) ->
+    updateLocationHash P: pathname, L: 0, I: null
+
+  handleMouseOver: (e) ->
+    return if @state.top
+    # calculate top that points to the selected file
+    selectedPathname = getLocationHash()['P']
+    pathnames = @props.pathnames
+    selectedIndex = _.indexOf(pathnames, selectedPathname) || 0
+    itemHeight = @refs.item0 && @refs.item0.getDOMNode().scrollHeight || 0
+    paddingTop = 15
+    top = e.clientY - (selectedIndex + 0.5) * itemHeight - paddingTop
+    top = Math.min(window.innerHeight - @refs.list.getDOMNode().clientHeight, top)
+    top = Math.max(top, 0)
+    @setState {top}
+
+  handleMouseLeave: (e) ->
+    @setState top: null
+
+  getStyle: ->
+    state = @state
+    props = @props
+    if state.top?
+      top: state.top
+    else
+      width: 0
+      maxWidth: 0
+
+  render: ->
+    selectedPathname = getLocationHash()['P']
+    props = @props
+    div className: 'fileIndexSidebar', onMouseOver: @handleMouseOver, onMouseLeave: @handleMouseLeave,
+      div className: 'fileIndex', style: @getStyle(), ref: 'list',
+        props.pathnames.map (pathname, index) =>
+          pathSegments = pathname.split('/')
+          itemProps = key: pathname, className: cx(fileItem: true, selected: selectedPathname == pathname), onClick: @handleFileItemClick.bind(this, pathname)
+          itemProps.ref = 'item0' if index == 0
+          div itemProps,
+            span className: 'dirname', pathSegments[1..-2].join('/')
+            span className: 'splitter', '/'
+            span className: 'basename', pathSegments[-1..]
 
 # Top-Level
 @ChangeView = React.createClass
@@ -353,4 +400,6 @@ MetaData = React.createClass
       h2 className: 'sectionTitle', 'File Diffs'
       if revisionAvailable
         RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side, owner: props.owner, highlight: state.highlight}
+      if revisionAvailable
+        FileIndex {pathnames}
 
