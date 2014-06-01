@@ -74,7 +74,6 @@ highlightJsRun = (code, language) ->
     parseNode root
     pushCurrentLine()
 
-    debugger
     [resultLines, hljsResult.language]
   )()
 
@@ -99,7 +98,7 @@ MoreButton = React.createClass
   displayName: 'MoreButton'
 
   render: ->
-    @transferPropsTo span className: 'lineWrapper',
+    @transferPropsTo span className: 'lineWrapper moreButtonWrapper',
       span className: 'moreButton', title: 'Hold [SHIFT] and click to show all', 'Show More'
 
 InlineComment = React.createClass

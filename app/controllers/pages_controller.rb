@@ -16,8 +16,8 @@ class PagesController < ApplicationController
     @sample_links = []
     Host.first(5).each do |host|
       if host.allow_anonymous || host_in_passwords?(host.hostname)
-        change_number = Change.where(:host_id => host.id).first.try(:number) || 1
-        @sample_links << "/#{host.hostname}/#{change_number}"
+        change_numbers = Change.where(:host_id => host.id).first(3).map(&:number) || [1]
+        @sample_links += change_numbers.map{|change_number| "/#{host.hostname}/#{change_number}"}
       end
     end
   end

@@ -29,10 +29,15 @@
   .lineWrapper {
     display: block;
     font-size: 0; /* get rid of mysterious whitespace caused by inline-block */
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 14px;
     position: relative;
     &.highlight {
       background-color: #ffd;
+    }
+    &.moreButtonWrapper {
+      max-height: 24px;
     }
   }
 
