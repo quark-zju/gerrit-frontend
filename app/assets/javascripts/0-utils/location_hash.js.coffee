@@ -2,6 +2,9 @@ LOCATION_HASH_SPLITTER = ';'
 LOCATION_HASH_KEY_VALUE_SPLITTER = ':'
 
 @getLocationHash = ->
+  # Firefox will incorrectly call decodeURIcomponent on location.hash:
+  # https://bugzilla.mozilla.org/show_bug.cgi?id=483304
+  # Sadly, no easy workaround for this.
   hash = location.hash.replace(/^#/, '')
   hashMap = {}
   for segment in hash.split(LOCATION_HASH_SPLITTER)

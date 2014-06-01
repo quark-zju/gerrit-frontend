@@ -166,7 +166,15 @@ InlineCommentList = React.createClass
         div key: pathname,
           InlineCommentPathname {pathname, revisionNumber}
           _(fileComments).map (comments, lineNo) ->
-            comments.map (comment) -> InlineComment {key: lineNo, highlight: props.highlightInlineCommentId == comment.id, revisionNumber, pathname, lineNo, comment}
+            comments.map (comment) -> InlineComment {
+              key: lineNo
+              # Firefox incorrectly decodeURIComponent location.hash, so test decoded id as well
+              highlight: props.highlightInlineCommentId == comment.id || props.highlightInlineCommentId == decodeURIComponent(comment.id)
+              revisionNumber
+              pathname
+              lineNo
+              comment
+            }
 
 Comment = React.createClass
   displayName: 'Comment'

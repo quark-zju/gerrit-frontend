@@ -5,11 +5,14 @@ html, body {
   padding: 0;
 }
 
+html {
+  overflow-y: scroll;
+}
+
 body {
   font-family: Verdana, Tahoma, 'Dejavu Sans', sans;
   font-size: 12px;
   margin: 13px 20px;
-  overflow-y: scroll;
 }
 
 pre, code, .code {
