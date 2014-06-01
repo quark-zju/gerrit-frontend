@@ -25,19 +25,22 @@ Then open [localhost:3000](http://localhost:3000), or try to load some changes l
 
 FAQ
 ---
-Q: How does it read gerrit data?
+#### Q: How does it read gerrit data?
 A: Data are read via Gerrit API. Gerrit 2.8.4-15 has been tested. Other versions may work fine.
 
-Q: Does it work for gerrit that needs authorization?
+#### Q: Does it work for gerrit that needs authorization?
 A: Yes. Just set HTTP passwords at `/passwords`.
 
-Q: Is there a cache?
-A: Yes. Data are stored in database. When a change is fully imported, visit it again won't emit any HTTP request.
+#### Q: Is there a cache?
+A: Yes. Data are stored in database server-side. When a change is fully imported, visit it again won't emit any HTTP request.
 
-Q: How do I force a change to be updated?
+#### Q: Is AJAX required to load revisions, files and diff changes?
+A: No. One HTTP request per change. Things like syntax highlighting, calculating diff are completed in client-side (browser).
+
+#### Q: How do I force a change to be updated?
 A: Append `?update=1` to the URL to fetch new revisions. Use `?update=2` to force reloading more (mostly existing) contents, which is useful to fix a broken import.
 
-Q: I don't need asynchronous importing. What to do?
+#### Q: I don't need asynchronous importing. What to do?
 A: Set related host's `is_local_net` attribute to `true`.
 
 Background Story
