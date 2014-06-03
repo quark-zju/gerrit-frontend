@@ -103,7 +103,7 @@ Line = React.createClass
     props = @props
     bookmarked = props.side == 'b' && pullr _lineBookmarks, props.pathname, props.lineNo
     span className: cx(lineWrapper: true, highlight: props.highlight),
-      span className: cx(lineNo: true, bookmarkLineNo: bookmarked), onClick: @handleLineNoClick, title: (if bookmarked then 'Press [J] or [K] to jump to next / previous bookmarked lines' else 'Click to bookmark this line'), props.lineNo
+      span className: cx(lineNo: true, bookmarkLineNo: bookmarked), onClick: @handleLineNoClick, title: (if bookmarked then 'Press [N] or [P] to jump to next / previous bookmarked lines' else 'Click to bookmark this line'), props.lineNo
       span className: 'code',
         if props.hljsContent
           props.hljsContent.map (segment, index) ->
