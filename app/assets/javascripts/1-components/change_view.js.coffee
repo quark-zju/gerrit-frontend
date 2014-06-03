@@ -55,6 +55,7 @@ FileDiff = React.createClass
         inlineComments: props.inlineComments
         highlightLine: props.highlightLine
         owner: props.owner
+        pathname: pathname
         highlightJsEnabled: (pathname != '/COMMIT_MSG')
         highlightJsLanguage: detectLanguage(pathname, $a)
       }

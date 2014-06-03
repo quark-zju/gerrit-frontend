@@ -4,10 +4,13 @@ cx = React.addons.classSet
 {
   hashString
   hljs
+  localStorage
   pullr
+  pullw
   scrollTo
   updateLocationHash
 } = @
+
 
 LINES_BEFORE = 5
 LINES_AFTER = 5
@@ -77,6 +80,10 @@ highlightJsRun = (code, language) ->
     [resultLines, hljsResult.language]
   )()
 
+# for performance, store lineBookmarks here. may experience state inconsist if other code alters localStorage.
+LINE_BOOKMARKS_KEY = 'lineBookmarks'
+_lineBookmarks = (try JSON.parse(localStorage.getItem(LINE_BOOKMARKS_KEY))) || {}
+
 Line = React.createClass
   displayName: 'Line'
 
@@ -85,10 +92,18 @@ Line = React.createClass
   shouldComponentUpdate: (nextProps) ->
     !_.isEqual(@props, nextProps)
 
+  handleLineNoClick: (e) ->
+    props = @props
+    lines = pullw _lineBookmarks, props.pathname
+    lines[props.lineNo] = !lines[props.lineNo]
+    localStorage.setItem LINE_BOOKMARKS_KEY, JSON.stringify(_lineBookmarks)
+    @forceUpdate()
+
   render: ->
     props = @props
+    bookmarked = pullr _lineBookmarks, props.pathname, props.lineNo
     span className: cx(lineWrapper: true, highlight: props.highlight),
-      span className: 'lineNo', props.lineNo
+      span className: cx(lineNo: true, bookmarkLineNo: bookmarked), onClick: @handleLineNoClick, title: (if bookmarked then 'Press [J] or [K] to jump to next / previous bookmarked lines' else 'Click to bookmark this line'), props.lineNo
       span className: 'code',
         if props.hljsContent
           props.hljsContent.map (segment, index) ->
@@ -201,7 +216,7 @@ InlineComment = React.createClass
             moreButtonDrawn = true
             MoreButton key: j, onClick: ((e) -> expandLine segment.id, if e.shiftKey then Infinity else LINES_EXPAND_ONCE)
         else
-          Line key: j, lineNo: currentLineNo, content: s, hljsContent: hljsLines[side][currentLineNo - 1], highlight: side == 'b' && props.highlightLine == currentLineNo,
+          Line key: j, lineNo: currentLineNo, content: s, hljsContent: hljsLines[side][currentLineNo - 1], highlight: side == 'b' && props.highlightLine == currentLineNo, pathname: props.pathname,
             if (currentInlineComments = inlineCommentBySideLine[side][currentLineNo])
               _(currentInlineComments).sortBy((c) -> c.date).map (comment) ->
                 InlineComment key: comment.id, comment: comment, owner: props.owner
