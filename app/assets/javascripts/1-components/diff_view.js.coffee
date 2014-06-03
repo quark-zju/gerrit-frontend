@@ -94,6 +94,7 @@ Line = React.createClass
 
   handleLineNoClick: (e) ->
     props = @props
+    return unless props.side == 'b'
     lines = pullw _lineBookmarks, props.pathname
     lines[props.lineNo] = !lines[props.lineNo]
     localStorage.setItem LINE_BOOKMARKS_KEY, JSON.stringify(_lineBookmarks)
@@ -101,9 +102,11 @@ Line = React.createClass
 
   render: ->
     props = @props
-    bookmarked = props.side == 'b' && pullr _lineBookmarks, props.pathname, props.lineNo
+    supportBookmark = props.side == 'b'
+    bookmarked = supportBookmark && pullr _lineBookmarks, props.pathname, props.lineNo
+    title = supportBookmark && (if bookmarked then 'Press [N] or [P] to jump to next / previous bookmarked lines' else 'Click to bookmark this line')
     span className: cx(lineWrapper: true, highlight: props.highlight),
-      span className: cx(lineNo: true, bookmarkLineNo: bookmarked), onClick: @handleLineNoClick, title: (if bookmarked then 'Press [N] or [P] to jump to next / previous bookmarked lines' else 'Click to bookmark this line'), props.lineNo
+      span className: cx(lineNo: true, bookmarkLineNo: bookmarked), onClick: @handleLineNoClick, title: title, props.lineNo
       span className: 'code',
         if props.hljsContent
           props.hljsContent.map (segment, index) ->
