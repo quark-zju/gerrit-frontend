@@ -6,27 +6,31 @@
 
 NEXT_BOOKMARK_LINE_KEY = 'j'
 PREV_BOOKMARK_LINE_KEY = 'k'
+NEXT_BOOKMARK_COMMENT_KEY = 'J'
+PREV_BOOKMARK_COMMENT_KEY = 'K'
+
+jumpAmongElements = (elements, isNext) ->
+  scrollY = window.scrollY
+  for element in elements
+    y = $(element).offset().top
+    if isNext && !target && y > scrollY
+      target = element
+    else if !isNext && y < scrollY
+      target = element
+  if !target
+    target =
+      if isNext
+        _(elements).first()
+      else
+        _(elements).last()
+  scrollTo target
+
 
 $ ->
   $(document).keypress (e) ->
     keyChar = String.fromCharCode(e.keyCode)
-
     switch keyChar
       when NEXT_BOOKMARK_LINE_KEY, PREV_BOOKMARK_LINE_KEY
-        # cycle all bookmarkLineNos
-        bookmarks = $('.bookmarkLineNo')
-        scrollY = window.scrollY
-        target = null
-        for element in bookmarks
-          y = $(element).offset().top
-          if keyChar == NEXT_BOOKMARK_LINE_KEY && !target && y > scrollY
-            target = element
-          else if keyChar == PREV_BOOKMARK_LINE_KEY && y < scrollY
-            target = element
-        if !target
-          target =
-            if keyChar == NEXT_BOOKMARK_LINE_KEY
-              bookmarks[0]
-            else
-              bookmarks.last()[0]
-        scrollTo target
+        jumpAmongElements $('.bookmarkLineNo'), keyChar == NEXT_BOOKMARK_LINE_KEY
+      when NEXT_BOOKMARK_COMMENT_KEY, PREV_BOOKMARK_COMMENT_KEY
+        jumpAmongElements $('.bookmarkComment'), keyChar == NEXT_BOOKMARK_COMMENT_KEY

@@ -3,6 +3,7 @@
 cx = React.addons.classSet
 {
   getLocationHash
+  localStorage
   pullr
   pullw
   scrollTo
@@ -180,6 +181,10 @@ InlineCommentList = React.createClass
               comment
             }
 
+# for performance, store commentBookmarks here. may experience state inconsist if other code alters localStorage.
+COMMENT_BOOKMARKS_KEY = 'commentBookmarks'
+_commentBookmarks = (try JSON.parse(localStorage.getItem(COMMENT_BOOKMARKS_KEY))) || {}
+
 Comment = React.createClass
   displayName: 'Comment'
 
@@ -190,8 +195,14 @@ Comment = React.createClass
   shouldComponentUpdate: (nextProps, nextState) ->
     !_.isEqual(@props, nextProps) || !_.isEqual(@state, nextState)
 
-  handleClick: ->
-    if @state.collapsed
+  handleClick: (e) ->
+    if e.altKey
+      # toggle bookmark
+      props = @props
+      _commentBookmarks[props.id] = !_commentBookmarks[props.id]
+      localStorage.setItem COMMENT_BOOKMARKS_KEY, JSON.stringify(_commentBookmarks)
+      @forceUpdate()
+    else if @state.collapsed || e.shiftKey
       @setState collapsed: !@state.collapsed
 
   isBot: ->
@@ -199,7 +210,8 @@ Comment = React.createClass
 
   render: ->
     props = @props
-    div className: cx(comment: true, collapsed: @state.collapsed, bot: @isBot()), id: "comment-#{props.id}", onClick: @handleClick,
+    bookmarked = _commentBookmarks[props.id]
+    div className: cx(comment: true, collapsed: @state.collapsed, bot: @isBot(), bookmarkComment: bookmarked), id: "comment-#{props.id}", onClick: @handleClick,
       table className: 'commentTable',
         tbody null,
           tr null,

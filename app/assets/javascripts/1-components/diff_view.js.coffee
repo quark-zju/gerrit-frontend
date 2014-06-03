@@ -101,7 +101,7 @@ Line = React.createClass
 
   render: ->
     props = @props
-    bookmarked = pullr _lineBookmarks, props.pathname, props.lineNo
+    bookmarked = props.side == 'b' && pullr _lineBookmarks, props.pathname, props.lineNo
     span className: cx(lineWrapper: true, highlight: props.highlight),
       span className: cx(lineNo: true, bookmarkLineNo: bookmarked), onClick: @handleLineNoClick, title: (if bookmarked then 'Press [J] or [K] to jump to next / previous bookmarked lines' else 'Click to bookmark this line'), props.lineNo
       span className: 'code',
@@ -216,7 +216,7 @@ InlineComment = React.createClass
             moreButtonDrawn = true
             MoreButton key: j, onClick: ((e) -> expandLine segment.id, if e.shiftKey then Infinity else LINES_EXPAND_ONCE)
         else
-          Line key: j, lineNo: currentLineNo, content: s, hljsContent: hljsLines[side][currentLineNo - 1], highlight: side == 'b' && props.highlightLine == currentLineNo, pathname: props.pathname,
+          Line key: j, lineNo: currentLineNo, content: s, hljsContent: hljsLines[side][currentLineNo - 1], highlight: side == 'b' && props.highlightLine == currentLineNo, pathname: props.pathname, side: side,
             if (currentInlineComments = inlineCommentBySideLine[side][currentLineNo])
               _(currentInlineComments).sortBy((c) -> c.date).map (comment) ->
                 InlineComment key: comment.id, comment: comment, owner: props.owner

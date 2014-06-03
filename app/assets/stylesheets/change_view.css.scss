@@ -134,6 +134,11 @@
       overflow: hidden;
       padding: 1px 10px;
     }
+
+    &.bookmarkComment {
+      border-left: 2px solid $tango-chameleon;
+      margin-left: -1px;
+    }
   }
 }
 
