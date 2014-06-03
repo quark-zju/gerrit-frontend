@@ -28,7 +28,8 @@ jumpAmongElements = (elements, isNext) ->
 
 $ ->
   $(document).keypress (e) ->
-    keyChar = String.fromCharCode(e.keyCode)
+    # Firefox uses `key`, Chrome uses `keyCode`.
+    keyChar = e.key || String.fromCharCode(e.keyCode)
     switch keyChar
       when NEXT_BOOKMARK_LINE_KEY, PREV_BOOKMARK_LINE_KEY
         jumpAmongElements $('.bookmarkLineNo'), keyChar == NEXT_BOOKMARK_LINE_KEY
