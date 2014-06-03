@@ -298,7 +298,7 @@ FileIndex = React.createClass
     # calculate top that points to the selected file
     selectedPathname = getLocationHash()['P']
     pathnames = @props.pathnames
-    selectedIndex = _.indexOf(pathnames, selectedPathname) || 0
+    selectedIndex = Math.max(_.indexOf(pathnames, selectedPathname), 0)
     itemHeight = @refs.item0 && @refs.item0.getDOMNode().scrollHeight || 0
     paddingTop = 15
     top = e.clientY - (selectedIndex + 0.5) * itemHeight - paddingTop
