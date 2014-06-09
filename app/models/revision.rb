@@ -40,10 +40,8 @@ class Revision < ActiveRecord::Base
     )
 
     if revision.files.empty? || update
-      Revision.transaction do
-        revision.fetch_files(gerrit)
-        revision.fetch_comments(gerrit)
-      end
+      revision.fetch_files(gerrit)
+      revision.fetch_comments(gerrit)
     end
 
     revision
@@ -54,41 +52,46 @@ class Revision < ActiveRecord::Base
   def fetch_files(gerrit)
     pathnames = gerrit.get("changes/#{change.number}/revisions/#{local_id}/files").keys
     pathnames.each do |pathname|
-      diff = gerrit.get("changes/#{change.number}/revisions/#{local_id}/files/#{pathname.gsub('/', '%2F')}/diff")
-      a = []
-      b = []
-      diff['content'].each do |h| # DiffInfo
-        h.each do |k, v|
-          a += v if k.include?('a')
-          b += v if k.include?('b')
-        end
-      end
       clause = revision_files.where(pathname: pathname)
       clause.first || begin
-        file = clause.build
-        file.a = a.join("\n")
-        file.b = b.join("\n")
-        file.save!
-        file
+        diff = gerrit.get("changes/#{change.number}/revisions/#{local_id}/files/#{pathname.gsub('/', '%2F')}/diff")
+        a = []
+        b = []
+        diff['content'].each do |h| # DiffInfo
+          h.each do |k, v|
+            a += v if k.include?('a')
+            b += v if k.include?('b')
+          end
+        end
+        RevisionFile.transaction do
+          file = clause.build
+          file.a = a.join("\n")
+          file.b = b.join("\n")
+          file.save!
+          file
+        end
       end
     end
   end
 
   def fetch_comments(gerrit)
     files_path_map = Hash[files.map{|f| [f.pathname, f]}]
-    Hash[gerrit.get("changes/#{change.number}/revisions/#{local_id}/comments").map do |pathname, comments|
-      file = files_path_map[pathname]
-      raise RuntimeError, "Comment on a non-exist file: '#{pathname}'" unless file
+    comments_data = gerrit.get("changes/#{change.number}/revisions/#{local_id}/comments")
+    RevisionFileComment.transaction do
+      Hash[comments_data.map do |pathname, comments|
+        file = files_path_map[pathname]
+        raise RuntimeError, "Comment on a non-exist file: '#{pathname}'" unless file
 
-      [pathname, comments.map do |comment|
-        file.comments.where(:local_id => comment['id']).first_or_create!(
-          author_id: change.host.users.from_json(comment['author']).id,
-          line: comment['line'],
-          message: comment['message'],
-          created_at: DateTime.parse(comment['updated']),
-        )
+        [pathname, comments.map do |comment|
+          file.comments.where(:local_id => comment['id']).first_or_create!(
+            author_id: change.host.users.from_json(comment['author']).id,
+            line: comment['line'],
+            message: comment['message'],
+            created_at: DateTime.parse(comment['updated']),
+          )
+        end]
       end]
-    end]
+    end
   end
 
   def as_json(deep = false)
