@@ -28,6 +28,7 @@ jumpAmongElements = (elements, isNext) ->
 
 $ ->
   $(document).keypress (e) ->
+    return if e.ctrlKey
     # Firefox uses `key`, Chrome uses `keyCode`.
     keyChar = e.key || String.fromCharCode(e.keyCode)
     if NEXT_BOOKMARK_LINE_KEYS.concat(PREV_BOOKMARK_LINE_KEYS).indexOf(keyChar) > -1
