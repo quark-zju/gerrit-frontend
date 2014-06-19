@@ -101,11 +101,11 @@
     }
   }
 
-  &.insert .b, &.change .b {
+  &.insert .b, &.change .b, &.insert .unified {
     background-color: #DDFFDD;
   }
 
-  &.delete .a, &.change .a {
+  &.delete .a, &.change .a, &.delete .unified {
     background-color: #FFEEEE;
   }
 }

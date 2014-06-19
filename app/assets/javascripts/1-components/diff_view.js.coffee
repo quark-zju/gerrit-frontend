@@ -106,7 +106,8 @@ Line = React.createClass
     bookmarked = supportBookmark && pullr _lineBookmarks, props.pathname, props.lineNo
     title = supportBookmark && (if bookmarked then 'Press [N] or [P] to jump to next / previous bookmarked lines' else 'Click to bookmark this line')
     span className: cx(lineWrapper: true, highlight: props.highlight),
-      span className: cx(lineNo: true, bookmarkLineNo: bookmarked), onClick: @handleLineNoClick, title: title, props.lineNo
+      if !props.unified || props.side == 'b'
+        span className: cx(lineNo: true, bookmarkLineNo: bookmarked), onClick: @handleLineNoClick, title: title, props.lineNo
       span className: 'code',
         if props.hljsContent
           props.hljsContent.map (segment, index) ->
@@ -156,6 +157,8 @@ InlineComment = React.createClass
   render: ->
     props = @props
 
+    unified = props.unified
+
     # calculate diff
     diffs = diffLines props.a, props.b
 
@@ -173,7 +176,7 @@ InlineComment = React.createClass
     while (diff = diffs[index])
       if !diff.added && !diff.removed
         segments.push(class: 'equal', a: diff.value, b: diff.value, id: index)
-      else if diff.added && (nextDiff = diffs[index + 1] || {}).removed
+      else if diff.added && (nextDiff = diffs[index + 1] || {}).removed && !unified
         segments.push(class: 'change', a: nextDiff.value, b: diff.value, id: index)
         index += 1
       else if diff.added
@@ -219,7 +222,8 @@ InlineComment = React.createClass
             moreButtonDrawn = true
             MoreButton key: j, onClick: ((e) -> expandLine segment.id, if e.shiftKey then Infinity else LINES_EXPAND_ONCE)
         else
-          Line key: j, lineNo: currentLineNo, content: s, hljsContent: hljsLines[side][currentLineNo - 1], highlight: side == 'b' && props.highlightLine == currentLineNo, pathname: props.pathname, side: side,
+          return null if unified && segment.class == 'equal' && side == 'a'
+          Line key: j, lineNo: currentLineNo, content: s, hljsContent: hljsLines[side][currentLineNo - 1], highlight: side == 'b' && props.highlightLine == currentLineNo, pathname: props.pathname, side: side, unified: unified,
             if (currentInlineComments = inlineCommentBySideLine[side][currentLineNo])
               _(currentInlineComments).sortBy((c) -> c.date).map (comment) ->
                 InlineComment key: comment.id, comment: comment, owner: props.owner
@@ -234,7 +238,16 @@ InlineComment = React.createClass
         tbody null,
           segments.map (segment) ->
             tr className: "diffSegment #{segment.class}", key: segment.id,
-              td className: 'a',
-                renderSegmentLines segment, 'a'
-              td className: 'b',
-                renderSegmentLines segment, 'b'
+              if unified
+                # unified
+                td className: 'unified',
+                  renderSegmentLines segment, 'a'
+                  renderSegmentLines segment, 'b'
+              else
+                # side-by-side
+                [
+                  td className: 'a', key: 'a',
+                    renderSegmentLines segment, 'a'
+                  td className: 'b', key: 'b',
+                    renderSegmentLines segment, 'b'
+                ]
