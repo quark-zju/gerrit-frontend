@@ -1,4 +1,4 @@
-{a, div, span, table, tbody, thead, tr, td, i, input, li, ul, p, pre, h2, h3, sup, style, select, option} = React.DOM
+{a, button, div, span, table, tbody, thead, tr, td, i, input, label, li, ul, p, pre, h2, h3, sup, style, select, option} = React.DOM
 
 cx = React.addons.classSet
 {
@@ -59,6 +59,7 @@ FileDiff = React.createClass
         pathname: pathname
         highlightJsEnabled: (pathname != '/COMMIT_MSG')
         highlightJsLanguage: detectLanguage(pathname, $a)
+        unified: props.unified
       }
 
 RevisionTag = React.createClass
@@ -130,6 +131,7 @@ RevisionDiff = React.createClass
           highlight: highlightLine == 0
           highlightLine: highlightLine
           owner: props.owner
+          unified: props.unified
 
 InlineCommentPathname = React.createClass
   displayName: 'InlineCommentPathname'
@@ -344,6 +346,9 @@ FileIndex = React.createClass
             span className: 'splitter', '/'
             span className: 'basename', pathSegments[-1..]
 
+
+UNIFIED_KEY = 'unified'
+
 # Top-Level
 @ChangeView = React.createClass
   displayName: 'ChangeView'
@@ -362,6 +367,7 @@ FileIndex = React.createClass
 
   getInitialState: ->
     revisionId = _.max(@props.revisions.map((x) -> x.revisionId))
+    unified = if localStorage.getItem(UNIFIED_KEY) == 1 then true else false
     revisionA: {id: revisionId, side: 'a'}
     revisionB: {id: revisionId, side: 'b'}
 
@@ -409,6 +415,11 @@ FileIndex = React.createClass
 
     @setState newState
 
+  handleUnifiedButtonClick: (e) ->
+    unified = !@state.unified
+    localStorage.setItem UNIFIED_KEY, unified && '1' || '0'
+    @setState {unified}
+
   render: ->
     props = @props
     state = @state
@@ -429,12 +440,13 @@ FileIndex = React.createClass
       if props.notice
         p className: 'changeNotice notes', props.notice
       h2 className: 'sectionTitle', 'Metadata'
-      MetaData @props
+      MetaData props
       h2 className: 'sectionTitle', 'Comments'
       CommentList comments: props.comments, revisions: props.revisions, owner: props.owner, highlight: state.highlight
+      button className: 'unifiedCheckbox', checked: state.unified, onClick: @handleUnifiedButtonClick, state.unified && 'Unified' || 'Side-by-side'
       h2 className: 'sectionTitle', 'File Diffs'
       if revisionAvailable
-        RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side, owner: props.owner, highlight: state.highlight}
+        RevisionDiff {revisionA, revisionB, pathnames, revisionASide: state.revisionA.side, revisionBSide: state.revisionB.side, owner: props.owner, highlight: state.highlight, unified: state.unified}
       if revisionAvailable
         FileIndex {pathnames}
 

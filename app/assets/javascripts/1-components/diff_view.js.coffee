@@ -215,6 +215,7 @@ InlineComment = React.createClass
       lines.map (s, j) ->
         currentLineNo = (lineNo[side] += 1)
         relativeLineNo = currentLineNo - baseLineNo
+        return null if unified && segment.class == 'equal' && side == 'a'
         if hide && relativeLineNo > linesAfter && relativeLineNo < lines.length - linesBefore
           if moreButtonDrawn
             null
@@ -222,7 +223,6 @@ InlineComment = React.createClass
             moreButtonDrawn = true
             MoreButton key: j, onClick: ((e) -> expandLine segment.id, if e.shiftKey then Infinity else LINES_EXPAND_ONCE)
         else
-          return null if unified && segment.class == 'equal' && side == 'a'
           Line key: j, lineNo: currentLineNo, content: s, hljsContent: hljsLines[side][currentLineNo - 1], highlight: side == 'b' && props.highlightLine == currentLineNo, pathname: props.pathname, side: side, unified: unified,
             if (currentInlineComments = inlineCommentBySideLine[side][currentLineNo])
               _(currentInlineComments).sortBy((c) -> c.date).map (comment) ->
